@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f57f6085e2960b94b88c106af6236b4a, type: 3}
+  m_Name: TestBeltTheme
+  m_EditorClassIdentifier: Assembly-CSharp::GeminFactory.BeltThemeSO
+  beltPrefab: {fileID: 8201030440221937309, guid: 7869ddcd259975847bbd04cae6f964c8, type: 3}
+  beltTurnLeftPrefab: {fileID: 8201030440221937309, guid: c3917254713519f43a2371ae2cf10bdf, type: 3}
+  beltTurnRightPrefab: {fileID: 8201030440221937309, guid: a6fd16ffd9eefea4da33f2a92db22e46, type: 3}
+  beltTLeftPrefab: {fileID: 8201030440221937309, guid: 8ce5572deb2d4dd4783cd83acb19126e, type: 3}
+  beltTRightPrefab: {fileID: 8201030440221937309, guid: 05817156e39b65146b3dbc9787f9e421, type: 3}
+  beltTMergePrefab: {fileID: 8201030440221937309, guid: 3aa25b01f85c3484a9e58cbf5e12137c, type: 3}
+  beltCrossPrefab: {fileID: 8201030440221937309, guid: 784ec0e7a2759ef4489c653edce38282, type: 3}
+  beltStartPrefab: {fileID: 8201030440221937309, guid: 9a323819fa2425846b7832a1ae65d2a3, type: 3}
+  beltEndPrefab: {fileID: 8201030440221937309, guid: 3cae1d37a8cca0d43b4a049ce682ed5f, type: 3}
+  beltSinglePrefab: {fileID: 8201030440221937309, guid: 8e75f0f5c5cbc8c4a9e4f7bd386d9e4a, type: 3}
+  beltEndTurnLeftPrefab: {fileID: 8201030440221937309, guid: 3c53691576d753a4b8a86d02caf5c8c1, type: 3}
+  beltEndTurnRightPrefab: {fileID: 8201030440221937309, guid: 03bc316e557a92a4b9b0a0e46a6cd263, type: 3}
+  beltEndMergePrefab: {fileID: 8201030440221937309, guid: 36e2ae191a948f64e9f5a3f02595bf8c, type: 3}
+  beltEndTLeftPrefab: {fileID: 8201030440221937309, guid: 4dbcb508fd1062341bea3fa05ce0d0f5, type: 3}
+  beltEndTRightPrefab: {fileID: 8201030440221937309, guid: 5f48130d024188c40abd5c04302d9d06, type: 3}
+  beltEndCrossPrefab: {fileID: 8201030440221937309, guid: cc2faacb0d649b147b0268093f4acba6, type: 3}

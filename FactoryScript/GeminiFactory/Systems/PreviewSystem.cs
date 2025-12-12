@@ -1,0 +1,176 @@
+using UnityEngine;
+using System.Collections.Generic;
+
+namespace GeminFactory
+{
+    /// <summary>
+    /// 预览系统
+    /// 负责在建造模式下显示跟随鼠鼠标松开的预览模型（建筑或传送带路径）。
+    /// </summary>
+    [System.Serializable]
+    public class PreviewSystem
+    {
+        #region Fields & Dependencies
+        private Transform previewParent;        // 预览物体的父变换
+        private BuildingSystem buildingSystem;  // 建筑系统引用
+        private BeltThemeSO beltTheme;          // 传送带主题SO
+        private MapManager mapManager;        // 地图管理器
+
+        private List<GameObject> beltPreviewObjects = new List<GameObject>();  // 存储所有生成的传送带预览物体
+        private GameObject buildingPreviewObject;  // 当前的建筑预览物体
+        private GameObject deleteRangeIndicator;  // 删除范围指示器 (红色圆柱体)
+        #endregion
+
+        #region Initialization
+        /// <summary>
+        /// 初始化预览系统
+        /// </summary>
+        public void Initialize(GameContext context)
+        {
+            previewParent = context.PreviewParent;
+            buildingSystem = context.BuildingSystem;
+            mapManager = context.MapManager;
+            
+            var config = context.GameConfig;
+            beltTheme = config.beltTheme;
+
+            SetupDeleteIndicator(config.deleteRadius, config.deletePreviewMat);
+        }
+
+        /// <summary>
+        /// 设置删除范围指示器 (红色圆柱体)
+        /// </summary>
+        private void SetupDeleteIndicator(float radius, Material mat)
+        {
+            deleteRangeIndicator = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Object.Destroy(deleteRangeIndicator.GetComponent<Collider>()); 
+            deleteRangeIndicator.name = "DeleteIndicator";
+            deleteRangeIndicator.transform.SetParent(previewParent);
+            deleteRangeIndicator.transform.localScale = new Vector3(radius * 2, 0.1f, radius * 2);
+            deleteRangeIndicator.SetActive(false);
+
+            if (mat != null && deleteRangeIndicator.GetComponent<Renderer>())
+            {
+                deleteRangeIndicator.GetComponent<Renderer>().material = mat;
+            }
+        }
+        #endregion
+
+        #region Preview Updates
+        /// <summary>
+        /// 更新删除指示器的位置和显示状态
+        /// </summary>
+        public void UpdateDeleteIndicator(bool isDeleting, Vector3 pos)
+        {
+            if (deleteRangeIndicator)
+            {
+                deleteRangeIndicator.SetActive(isDeleting);
+                if (isDeleting) deleteRangeIndicator.transform.position = pos;
+            }
+        }
+
+        /// <summary>
+        /// 更新传送带路径预览
+        /// </summary>
+        public void UpdateBeltPreview(Vector2Int start, Vector2Int end, bool isAlternatePath)
+        {
+            // 清理建筑预览
+            if (buildingPreviewObject != null) Object.Destroy(buildingPreviewObject);
+
+            // 清理旧的传送带预览
+            foreach (var obj in beltPreviewObjects) Object.Destroy(obj);
+            beltPreviewObjects.Clear();
+
+            List<Vector2Int> points = buildingSystem.CalculatePathPoints(start, end, isAlternatePath);
+            GameObject prefab = beltTheme != null ? beltTheme.beltPrefab : null;
+            if (prefab == null) return;
+
+            for (int i = 0; i < points.Count; i++)
+            {
+                Vector2Int current = points[i];
+                
+                // 检查是否是建筑区域 (>=MIN_BUILDING_ID)，如果是则跳过预览生成
+                // 这样用户可以直观地看到传送带会在建筑处断开
+                    if (mapManager != null)
+                    {
+                        int idx = mapManager.GetIndex(current);
+                        if (mapManager.mapCells[idx].type >= FactoryConstants.MIN_BUILDING_ID) continue;
+                    }
+
+                int dir = buildingSystem.CalculateDirectionForPathIndex(points, i);
+                Quaternion rot = GetBeltRotation(dir);
+                
+                GameObject p = Object.Instantiate(prefab, new Vector3(current.x, 0.05f, current.y), rot, previewParent);
+                beltPreviewObjects.Add(p);
+            }
+        }
+
+        /// <summary>
+        /// 更新建筑预览
+        /// </summary>
+        public void UpdateBuildingPreview(BuildingDataSO data, Vector2Int mousePos)
+        {
+            // 清理传送带预览
+            foreach (var obj in beltPreviewObjects) Object.Destroy(obj);
+            beltPreviewObjects.Clear();
+
+            if (data == null || data.prefab == null) return;
+
+            Vector2Int origin = GetBuildingOrigin(mousePos, data);
+
+            // 如果预览对象不存在，创建它
+            if (buildingPreviewObject == null)
+            {
+                buildingPreviewObject = Object.Instantiate(data.prefab, previewParent);
+                // 移除 Collider 以免干扰射线检测
+                foreach (var c in buildingPreviewObject.GetComponentsInChildren<Collider>()) Object.Destroy(c);
+            }
+
+            // 更新位置 (居中对齐)
+            float centerX = origin.x + (data.width - 1) * 0.5f;
+            float centerZ = origin.y + (data.height - 1) * 0.5f;
+            buildingPreviewObject.transform.position = new Vector3(centerX, 0.1f, centerZ);
+            buildingPreviewObject.transform.rotation = Quaternion.identity;
+        }
+
+        /// <summary>
+        /// 清理所有预览对象
+        /// </summary>
+        public void ClearPreview()
+        {
+            foreach (var obj in beltPreviewObjects) Object.Destroy(obj);
+            beltPreviewObjects.Clear();
+            
+            if (buildingPreviewObject != null)
+            {
+                Object.Destroy(buildingPreviewObject);
+                buildingPreviewObject = null;
+            }
+        }
+        #endregion
+
+        #region Helpers
+        /// <summary>
+        /// 计算建筑的原点坐标 (左下角)，使其中心对齐鼠标位置
+        /// </summary>
+        public Vector2Int GetBuildingOrigin(Vector2Int mousePos, BuildingDataSO data)
+        {
+            if (data == null) return mousePos;
+            return mousePos - new Vector2Int(data.width / 2, data.height / 2);
+        }
+
+        Quaternion GetBeltRotation(int direction)
+        {
+            float yRot = 0;
+            switch (direction)
+            {
+                case 1: yRot = 0; break;
+                case 2: yRot = 180; break;
+                case 3: yRot = -90; break;
+                case 4: yRot = 90; break;
+            }
+            return Quaternion.Euler(90, yRot, 0);
+        }
+        #endregion
+    }
+}

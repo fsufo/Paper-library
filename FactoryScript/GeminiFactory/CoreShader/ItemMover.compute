@@ -1,0 +1,112 @@
+#pragma kernel CSMain
+#pragma kernel ClearGrid
+#pragma kernel MarkGrid
+#pragma kernel DeleteItemsInArea
+
+#include "ItemMover_Common.hlsl"
+#include "ItemMover_Logic.hlsl"
+
+// --- Kernels ---
+
+[numthreads(THREAD_GROUP_SIZE_GRID, 1, 1)]
+void ClearGrid(uint3 id : SV_DispatchThreadID)
+{
+    int idx = id.x;
+    if (idx < mapWidth * mapHeight)
+    {
+        GridOccupancy[idx] = 0;
+    }
+}
+
+[numthreads(THREAD_GROUP_SIZE_GRID, 1, 1)]
+void MarkGrid(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)maxItems) return;
+    if (items[id.x].isActive == 0) return;
+
+    float2 pos = items[id.x].position;
+    int gx = (int)round(pos.x);
+    int gy = (int)round(pos.y);
+
+    if (IsValidGrid(gx, gy))
+    {
+        int gridIndex = GetGridIndex(gx, gy);
+        int originalValue;
+        InterlockedExchange(GridOccupancy[gridIndex], (int)id.x + 1, originalValue);
+    }
+}
+
+[numthreads(THREAD_GROUP_SIZE_X, 1, 1)]
+void DeleteItemsInArea(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)maxItems) return;
+    if (items[id.x].isActive == 0) return;
+
+    float dist = distance(items[id.x].position, deleteCenter);
+
+    if (dist <= deleteRadius)
+    {
+        items[id.x].isActive = 0;
+        items[id.x].position = float2(-999, -999);
+        InterlockedAdd(GlobalStats[0], items[id.x].price);
+    }
+}
+
+[numthreads(THREAD_GROUP_SIZE_X, 1, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if (items[id.x].isActive == 0) return;
+
+    float2 currentPos = items[id.x].position;
+    // [Fix] 将 extraData 读取到局部变量，在循环中维护，最后写回。
+    // 这防止了在多迭代中因重复读取全局内存旧值而导致的重复取号问题。
+    int localExtraData = items[id.x].extraData;
+    
+    int iterations = (int)ceil(deltaTime / FIXED_TIME_STEP);
+    if (iterations > 10) iterations = 10; 
+    float dt = deltaTime / iterations;
+
+    for (int i = 0; i < iterations; i++)
+    {
+        int gridX = (int)round(currentPos.x);
+        int gridY = (int)round(currentPos.y);
+
+        if (!IsValidGrid(gridX, gridY)) break; // 使用 break 而不是 return，确保最后能写回状态
+
+        int gridIndex = GetGridIndex(gridX, gridY);
+        int tileType = MapGrid[gridIndex].type;
+
+        float2 targetDir = GetBeltDirection(tileType);
+        float2 centerPos = float2(gridX, gridY);
+        float2 toCenter = centerPos - currentPos;
+        float2 moveDir = targetDir;
+        bool isAligning = false;
+        
+        if (tileType == ID_SPLITTER)
+        {
+            // 传递 localExtraData
+            ProcessSplitter(gridIndex, int2(gridX, gridY), centerPos, currentPos, id.x, moveDir, isAligning, localExtraData);
+        }
+        else 
+        {
+            // [State Reset] 离开分流器后，重置局部状态
+            localExtraData = -1;
+
+            if (tileType >= BELT_INPUT_UP && tileType <= BELT_INPUT_RIGHT)
+            {
+                ProcessInputPort(toCenter, centerPos, moveDir, isAligning, currentPos);
+            }
+            else
+            {
+                ProcessBeltAlignment(targetDir, toCenter, centerPos, moveDir, isAligning, currentPos);
+            }
+        }
+
+        currentPos = CalculateNextPosition(int2(gridX, gridY), currentPos, moveDir, moveSpeed, dt, isAligning, centerPos, toCenter, (int)id.x);
+    }
+
+    items[id.x].velocity = (currentPos - items[id.x].position) / deltaTime;
+    items[id.x].position = currentPos;
+    // [Fix] 循环结束后，将最终状态写回全局 Buffer
+    items[id.x].extraData = localExtraData;
+}
