@@ -1,0 +1,2776 @@
+{
+    "width": 256,
+    "height": 256,
+    "money": 4127,
+    "belts": [
+        {
+            "x": 50,
+            "y": 90,
+            "direction": 4
+        },
+        {
+            "x": 49,
+            "y": 90,
+            "direction": 4
+        },
+        {
+            "x": 48,
+            "y": 90,
+            "direction": 4
+        },
+        {
+            "x": 47,
+            "y": 90,
+            "direction": 4
+        },
+        {
+            "x": 46,
+            "y": 90,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 90,
+            "direction": 4
+        },
+        {
+            "x": 44,
+            "y": 90,
+            "direction": 4
+        },
+        {
+            "x": 43,
+            "y": 90,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 90,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 90,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 89,
+            "direction": 1
+        },
+        {
+            "x": 41,
+            "y": 88,
+            "direction": 1
+        },
+        {
+            "x": 41,
+            "y": 87,
+            "direction": 1
+        },
+        {
+            "x": 41,
+            "y": 85,
+            "direction": 1
+        },
+        {
+            "x": 41,
+            "y": 84,
+            "direction": 1
+        },
+        {
+            "x": 41,
+            "y": 83,
+            "direction": 1
+        },
+        {
+            "x": 40,
+            "y": 83,
+            "direction": 4
+        },
+        {
+            "x": 39,
+            "y": 83,
+            "direction": 4
+        },
+        {
+            "x": 38,
+            "y": 83,
+            "direction": 4
+        },
+        {
+            "x": 50,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 49,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 48,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 47,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 46,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 44,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 43,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 40,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 39,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 77,
+            "direction": 2
+        },
+        {
+            "x": 41,
+            "y": 78,
+            "direction": 2
+        },
+        {
+            "x": 41,
+            "y": 79,
+            "direction": 2
+        },
+        {
+            "x": 40,
+            "y": 79,
+            "direction": 4
+        },
+        {
+            "x": 39,
+            "y": 79,
+            "direction": 4
+        },
+        {
+            "x": 38,
+            "y": 79,
+            "direction": 4
+        },
+        {
+            "x": 50,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 49,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 48,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 47,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 46,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 44,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 43,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 38,
+            "y": 86,
+            "direction": 4
+        },
+        {
+            "x": 40,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 39,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 38,
+            "y": 76,
+            "direction": 4
+        },
+        {
+            "x": 40,
+            "y": 73,
+            "direction": 4
+        },
+        {
+            "x": 39,
+            "y": 73,
+            "direction": 4
+        },
+        {
+            "x": 38,
+            "y": 73,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 75,
+            "direction": 1
+        },
+        {
+            "x": 41,
+            "y": 74,
+            "direction": 1
+        },
+        {
+            "x": 41,
+            "y": 70,
+            "direction": 1
+        },
+        {
+            "x": 41,
+            "y": 69,
+            "direction": 1
+        },
+        {
+            "x": 50,
+            "y": 65,
+            "direction": 4
+        },
+        {
+            "x": 49,
+            "y": 65,
+            "direction": 4
+        },
+        {
+            "x": 48,
+            "y": 65,
+            "direction": 4
+        },
+        {
+            "x": 47,
+            "y": 65,
+            "direction": 4
+        },
+        {
+            "x": 46,
+            "y": 65,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 65,
+            "direction": 4
+        },
+        {
+            "x": 44,
+            "y": 65,
+            "direction": 4
+        },
+        {
+            "x": 43,
+            "y": 65,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 65,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 65,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 66,
+            "direction": 2
+        },
+        {
+            "x": 41,
+            "y": 67,
+            "direction": 2
+        },
+        {
+            "x": 50,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 49,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 48,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 47,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 46,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 44,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 43,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 73,
+            "direction": 1
+        },
+        {
+            "x": 40,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 39,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 44,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 47,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 38,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 39,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 48,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 49,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 50,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 61,
+            "direction": 2
+        },
+        {
+            "x": 41,
+            "y": 60,
+            "direction": 2
+        },
+        {
+            "x": 38,
+            "y": 68,
+            "direction": 4
+        },
+        {
+            "x": 48,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 46,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 43,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 44,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 46,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 47,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 48,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 49,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 50,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 43,
+            "direction": 1
+        },
+        {
+            "x": 43,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 43,
+            "direction": 4
+        },
+        {
+            "x": 40,
+            "y": 54,
+            "direction": 1
+        },
+        {
+            "x": 40,
+            "y": 55,
+            "direction": 1
+        },
+        {
+            "x": 40,
+            "y": 56,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 56,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 56,
+            "direction": 4
+        },
+        {
+            "x": 43,
+            "y": 56,
+            "direction": 4
+        },
+        {
+            "x": 44,
+            "y": 56,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 56,
+            "direction": 4
+        },
+        {
+            "x": 46,
+            "y": 56,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 44,
+            "direction": 2
+        },
+        {
+            "x": 46,
+            "y": 43,
+            "direction": 4
+        },
+        {
+            "x": 47,
+            "y": 43,
+            "direction": 4
+        },
+        {
+            "x": 47,
+            "y": 56,
+            "direction": 4
+        },
+        {
+            "x": 48,
+            "y": 56,
+            "direction": 4
+        },
+        {
+            "x": 49,
+            "y": 56,
+            "direction": 4
+        },
+        {
+            "x": 50,
+            "y": 56,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 48,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 44,
+            "direction": 1
+        },
+        {
+            "x": 40,
+            "y": 52,
+            "direction": 2
+        },
+        {
+            "x": 45,
+            "y": 45,
+            "direction": 2
+        },
+        {
+            "x": 45,
+            "y": 43,
+            "direction": 4
+        },
+        {
+            "x": 48,
+            "y": 43,
+            "direction": 4
+        },
+        {
+            "x": 49,
+            "y": 43,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 59,
+            "direction": 4
+        },
+        {
+            "x": 43,
+            "y": 59,
+            "direction": 4
+        },
+        {
+            "x": 46,
+            "y": 59,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 59,
+            "direction": 4
+        },
+        {
+            "x": 40,
+            "y": 51,
+            "direction": 2
+        },
+        {
+            "x": 41,
+            "y": 59,
+            "direction": 4
+        },
+        {
+            "x": 29,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 40,
+            "y": 50,
+            "direction": 4
+        },
+        {
+            "x": 41,
+            "y": 50,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 50,
+            "direction": 4
+        },
+        {
+            "x": 43,
+            "y": 50,
+            "direction": 4
+        },
+        {
+            "x": 44,
+            "y": 50,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 50,
+            "direction": 4
+        },
+        {
+            "x": 46,
+            "y": 50,
+            "direction": 4
+        },
+        {
+            "x": 47,
+            "y": 50,
+            "direction": 4
+        },
+        {
+            "x": 38,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 39,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 40,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 42,
+            "y": 62,
+            "direction": 4
+        },
+        {
+            "x": 49,
+            "y": 59,
+            "direction": 4
+        },
+        {
+            "x": 48,
+            "y": 50,
+            "direction": 4
+        },
+        {
+            "x": 49,
+            "y": 50,
+            "direction": 4
+        },
+        {
+            "x": 50,
+            "y": 50,
+            "direction": 4
+        },
+        {
+            "x": 40,
+            "y": 43,
+            "direction": 4
+        },
+        {
+            "x": 39,
+            "y": 43,
+            "direction": 4
+        },
+        {
+            "x": 43,
+            "y": 48,
+            "direction": 4
+        },
+        {
+            "x": 44,
+            "y": 48,
+            "direction": 4
+        },
+        {
+            "x": 45,
+            "y": 48,
+            "direction": 2
+        },
+        {
+            "x": 45,
+            "y": 47,
+            "direction": 2
+        },
+        {
+            "x": 45,
+            "y": 46,
+            "direction": 2
+        },
+        {
+            "x": 44,
+            "y": 59,
+            "direction": 4
+        },
+        {
+            "x": 48,
+            "y": 59,
+            "direction": 4
+        },
+        {
+            "x": 50,
+            "y": 43,
+            "direction": 4
+        },
+        {
+            "x": 50,
+            "y": 59,
+            "direction": 4
+        },
+        {
+            "x": 47,
+            "y": 59,
+            "direction": 4
+        },
+        {
+            "x": 30,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 19,
+            "y": 53,
+            "direction": 4
+        },
+        {
+            "x": 20,
+            "y": 53,
+            "direction": 4
+        }
+    ],
+    "buildings": [
+        {
+            "x": 41,
+            "y": 86,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 51,
+            "y": 90,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 51,
+            "y": 86,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 36,
+            "y": 86,
+            "buildingName": "Miner",
+            "progressTimer": 0.40642398595809939,
+            "isProcessing": true,
+            "inventory": []
+        },
+        {
+            "x": 36,
+            "y": 83,
+            "buildingName": "Miner",
+            "progressTimer": 0.1731983870267868,
+            "isProcessing": true,
+            "inventory": []
+        },
+        {
+            "x": 36,
+            "y": 73,
+            "buildingName": "Miner",
+            "progressTimer": 0.4421820640563965,
+            "isProcessing": true,
+            "inventory": []
+        },
+        {
+            "x": 36,
+            "y": 76,
+            "buildingName": "Miner",
+            "progressTimer": 0.5,
+            "isProcessing": true,
+            "inventory": []
+        },
+        {
+            "x": 36,
+            "y": 79,
+            "buildingName": "Miner",
+            "progressTimer": 0.15293098986148835,
+            "isProcessing": true,
+            "inventory": []
+        },
+        {
+            "x": 41,
+            "y": 76,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 51,
+            "y": 76,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 36,
+            "y": 68,
+            "buildingName": "Miner",
+            "progressTimer": 0.1731983870267868,
+            "isProcessing": true,
+            "inventory": []
+        },
+        {
+            "x": 51,
+            "y": 68,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 41,
+            "y": 68,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 40,
+            "y": 53,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 51,
+            "y": 65,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 51,
+            "y": 56,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 51,
+            "y": 53,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 51,
+            "y": 50,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 36,
+            "y": 53,
+            "buildingName": "Miner",
+            "progressTimer": 0.1731983870267868,
+            "isProcessing": true,
+            "inventory": []
+        },
+        {
+            "x": 51,
+            "y": 62,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 36,
+            "y": 62,
+            "buildingName": "Miner",
+            "progressTimer": 0.1731983870267868,
+            "isProcessing": true,
+            "inventory": []
+        },
+        {
+            "x": 41,
+            "y": 45,
+            "buildingName": "Smelter",
+            "progressTimer": 0.5991220474243164,
+            "isProcessing": true,
+            "inventory": [
+                {
+                    "itemID": 1261197360,
+                    "count": 10
+                }
+            ]
+        },
+        {
+            "x": 51,
+            "y": 43,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 37,
+            "y": 43,
+            "buildingName": "Miner",
+            "progressTimer": 0.3575855493545532,
+            "isProcessing": true,
+            "inventory": []
+        },
+        {
+            "x": 51,
+            "y": 59,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 41,
+            "y": 62,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 17,
+            "y": 53,
+            "buildingName": "Miner",
+            "progressTimer": 0.13098149001598359,
+            "isProcessing": true,
+            "inventory": []
+        },
+        {
+            "x": 21,
+            "y": 57,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 21,
+            "y": 56,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 21,
+            "y": 55,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 21,
+            "y": 54,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 21,
+            "y": 53,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 21,
+            "y": 52,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 21,
+            "y": 51,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 21,
+            "y": 50,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 21,
+            "y": 49,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 22,
+            "y": 49,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 22,
+            "y": 50,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 22,
+            "y": 51,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 22,
+            "y": 52,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 22,
+            "y": 53,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 22,
+            "y": 54,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 22,
+            "y": 55,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 22,
+            "y": 56,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 22,
+            "y": 57,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 23,
+            "y": 57,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 23,
+            "y": 55,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 23,
+            "y": 56,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 23,
+            "y": 54,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 23,
+            "y": 53,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 23,
+            "y": 52,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 24,
+            "y": 51,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 23,
+            "y": 50,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 23,
+            "y": 51,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 23,
+            "y": 49,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 24,
+            "y": 49,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 24,
+            "y": 50,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 24,
+            "y": 52,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 24,
+            "y": 53,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 24,
+            "y": 54,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 24,
+            "y": 55,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 24,
+            "y": 56,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 24,
+            "y": 57,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 25,
+            "y": 57,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 25,
+            "y": 56,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 25,
+            "y": 55,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 25,
+            "y": 53,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 25,
+            "y": 54,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 25,
+            "y": 51,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 25,
+            "y": 52,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 25,
+            "y": 50,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 25,
+            "y": 49,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 26,
+            "y": 50,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 26,
+            "y": 49,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 26,
+            "y": 51,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 26,
+            "y": 52,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 26,
+            "y": 53,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 26,
+            "y": 54,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 26,
+            "y": 55,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 26,
+            "y": 56,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 26,
+            "y": 57,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 27,
+            "y": 57,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 27,
+            "y": 55,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 27,
+            "y": 56,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 27,
+            "y": 53,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 27,
+            "y": 54,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 27,
+            "y": 52,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 27,
+            "y": 51,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 27,
+            "y": 50,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 27,
+            "y": 49,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 28,
+            "y": 57,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 28,
+            "y": 56,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 28,
+            "y": 55,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 28,
+            "y": 54,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 28,
+            "y": 53,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 28,
+            "y": 52,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 28,
+            "y": 51,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 28,
+            "y": 50,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 28,
+            "y": 49,
+            "buildingName": "Splitter",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        },
+        {
+            "x": 31,
+            "y": 53,
+            "buildingName": "Shop",
+            "progressTimer": 0.0,
+            "isProcessing": false,
+            "inventory": []
+        }
+    ],
+    "items": [
+        {
+            "x": 41.0,
+            "y": 70.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 69.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 24.0,
+            "y": 49.565860748291019,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 27.6549015045166,
+            "y": 51.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 21.0,
+            "y": 56.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 26.029394149780275,
+            "y": 57.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 27.961965560913087,
+            "y": 55.00155258178711,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 23.611677169799806,
+            "y": 54.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 24.577301025390626,
+            "y": 52.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 28.0,
+            "y": 53.70909118652344,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 28.788009643554689,
+            "y": 53.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 26.194822311401368,
+            "y": 53.01823806762695,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 24.0,
+            "y": 55.054447174072269,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 24.99662208557129,
+            "y": 56.561973571777347,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 28.0,
+            "y": 52.05652618408203,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 21.323076248168947,
+            "y": 55.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 22.0,
+            "y": 51.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 23.138776779174806,
+            "y": 56.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 27.0,
+            "y": 56.413185119628909,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 26.344985961914064,
+            "y": 49.997833251953128,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 23.0,
+            "y": 51.198665618896487,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 24.982696533203126,
+            "y": 49.000003814697269,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 25.04742431640625,
+            "y": 50.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 21.535106658935548,
+            "y": 54.03055191040039,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 27.858592987060548,
+            "y": 49.99570083618164,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 27.0,
+            "y": 52.29951858520508,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 26.0,
+            "y": 55.59661865234375,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 26.0,
+            "y": 52.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 21.059961318969728,
+            "y": 57.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 27.596858978271486,
+            "y": 49.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 24.054454803466798,
+            "y": 55.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 26.959623336791993,
+            "y": 55.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 27.996109008789064,
+            "y": 56.51201248168945,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 21.101335525512697,
+            "y": 49.00330352783203,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 21.0,
+            "y": 51.029396057128909,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 22.0,
+            "y": 52.93026351928711,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 24.19599151611328,
+            "y": 53.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 21.0,
+            "y": 50.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 27.0,
+            "y": 53.700496673583987,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 42.0,
+            "y": 45.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 23.00002670288086,
+            "y": 49.7579460144043,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 49.270416259765628,
+            "y": 76.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 47.806846618652347,
+            "y": 76.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 23.515064239501954,
+            "y": 57.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 46.32318115234375,
+            "y": 76.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 42.0,
+            "y": 44.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 44.84321594238281,
+            "y": 76.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 21.0,
+            "y": 53.02942657470703,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 43.37860870361328,
+            "y": 76.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 49.09896469116211,
+            "y": 90.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 24.689668655395509,
+            "y": 51.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.92521667480469,
+            "y": 76.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 42.0,
+            "y": 43.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 46.07094192504883,
+            "y": 90.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 22.32752227783203,
+            "y": 55.97113037109375,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 76.55240631103516,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 75.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 48.55669403076172,
+            "y": 86.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 40.0,
+            "y": 76.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 25.865983963012697,
+            "y": 53.99999237060547,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 43.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 43.096900939941409,
+            "y": 90.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 74.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 45.619693756103519,
+            "y": 86.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 23.0,
+            "y": 52.75800704956055,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 39.0,
+            "y": 76.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 73.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 89.13956451416016,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 26.08131980895996,
+            "y": 51.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 77.56966400146485,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 42.63401412963867,
+            "y": 86.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 40.0,
+            "y": 43.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 38.0,
+            "y": 76.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 49.931907653808597,
+            "y": 56.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 86.1310043334961,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 21.000228881835939,
+            "y": 49.98408889770508,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 78.62770080566406,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 40.0,
+            "y": 86.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 47.42423629760742,
+            "y": 59.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 50.39799880981445,
+            "y": 53.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 47.42423629760742,
+            "y": 65.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 85.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 22.0,
+            "y": 49.494651794433597,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 49.05207443237305,
+            "y": 43.0,
+            "itemID": 368592393,
+            "price": 10,
+            "r": 0.28773581981658938,
+            "g": 0.7399541139602661,
+            "b": 1.0
+        },
+        {
+            "x": 40.0,
+            "y": 79.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 40.0,
+            "y": 73.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 39.0,
+            "y": 86.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 47.88664627075195,
+            "y": 62.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 44.90280532836914,
+            "y": 50.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 47.88664627075195,
+            "y": 68.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 41.0,
+            "y": 84.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 23.0,
+            "y": 54.91651153564453,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 39.0,
+            "y": 79.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 42.41364288330078,
+            "y": 59.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 42.41545104980469,
+            "y": 56.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 42.41364288330078,
+            "y": 65.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 40.59336471557617,
+            "y": 83.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 21.99721336364746,
+            "y": 53.07127380371094,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 39.0,
+            "y": 73.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 45.0,
+            "y": 43.96240997314453,
+            "itemID": 368592393,
+            "price": 10,
+            "r": 0.28773581981658938,
+            "g": 0.7399541139602661,
+            "b": 1.0
+        },
+        {
+            "x": 39.0,
+            "y": 43.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 37.0,
+            "y": 76.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 38.0,
+            "y": 86.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 42.879554748535159,
+            "y": 62.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 42.879554748535159,
+            "y": 53.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 42.879554748535159,
+            "y": 68.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 39.57779312133789,
+            "y": 83.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 21.531156539916993,
+            "y": 52.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 38.0,
+            "y": 73.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 38.0,
+            "y": 79.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 40.36954879760742,
+            "y": 62.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 39.956363677978519,
+            "y": 52.586814880371097,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 40.36954879760742,
+            "y": 68.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 38.563270568847659,
+            "y": 83.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 20.0,
+            "y": 53.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 44.00236129760742,
+            "y": 48.0,
+            "itemID": 368592393,
+            "price": 10,
+            "r": 0.28773581981658938,
+            "g": 0.7399541139602661,
+            "b": 1.0
+        },
+        {
+            "x": 37.0,
+            "y": 73.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 37.0,
+            "y": 86.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 38.0,
+            "y": 43.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 37.86599349975586,
+            "y": 62.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 37.86599349975586,
+            "y": 53.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 37.86599349975586,
+            "y": 68.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 37.54896545410156,
+            "y": 83.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 37.0,
+            "y": 79.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        },
+        {
+            "x": 18.6549015045166,
+            "y": 53.0,
+            "itemID": 1261197360,
+            "price": 1,
+            "r": 0.43396228551864626,
+            "g": 0.43396228551864626,
+            "b": 0.43396228551864626
+        }
+    ]
+}
