@@ -19,7 +19,8 @@ namespace GeminFactory.Systems.SaveLoad
     {
         public int x;
         public int y;
-        public int direction; // 1-4
+        public int direction; // 1-4 or Elevator ID
+        public int height;    // [New] Layer Height
     }
 
     [System.Serializable]
@@ -50,5 +51,6 @@ namespace GeminFactory.Systems.SaveLoad
         public int itemID;
         public int price;
         public float r, g, b;
+        public float height; // [New] Stores targetHeight (Logic Layer)
     }
 }

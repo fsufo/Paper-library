@@ -8,105 +8,93 @@
 
 // --- Kernels ---
 
-[numthreads(THREAD_GROUP_SIZE_GRID, 1, 1)]
+[numthreads(THREAD_GROUP_GRID, 1, 1)]
 void ClearGrid(uint3 id : SV_DispatchThreadID)
 {
-    int idx = id.x;
-    if (idx < mapWidth * mapHeight)
-    {
-        GridOccupancy[idx] = 0;
-    }
+    // Support Layers
+    if (id.x < Width * Height * MAX_LAYERS) Grid[id.x] = 0;
 }
 
-[numthreads(THREAD_GROUP_SIZE_GRID, 1, 1)]
+[numthreads(THREAD_GROUP_GRID, 1, 1)]
 void MarkGrid(uint3 id : SV_DispatchThreadID)
 {
-    if (id.x >= (uint)maxItems) return;
-    if (items[id.x].isActive == 0) return;
+    if (id.x >= (uint)MaxItems) return;
+    if (Items[id.x].active == 0) return;
 
-    float2 pos = items[id.x].position;
+    // 关键：MarkGrid 必须使用逻辑位置
+    float2 pos = Items[id.x].logicPos;
+    if (length(pos) < 0.001) pos = Items[id.x].pos;
+    
+    // Use targetHeight as layer
+    int layer = (int)round(Items[id.x].targetHeight);
+
     int gx = (int)round(pos.x);
     int gy = (int)round(pos.y);
 
-    if (IsValidGrid(gx, gy))
+    if (IsValid(gx, gy))
     {
-        int gridIndex = GetGridIndex(gx, gy);
-        int originalValue;
-        InterlockedExchange(GridOccupancy[gridIndex], (int)id.x + 1, originalValue);
+        int idx = GetIdx(gx, gy, layer);
+        int orig;
+        InterlockedExchange(Grid[idx], (int)id.x + 1, orig);
     }
 }
 
-[numthreads(THREAD_GROUP_SIZE_X, 1, 1)]
+[numthreads(THREAD_GROUP_X, 1, 1)]
 void DeleteItemsInArea(uint3 id : SV_DispatchThreadID)
 {
-    if (id.x >= (uint)maxItems) return;
-    if (items[id.x].isActive == 0) return;
+    if (id.x >= (uint)MaxItems) return;
+    if (Items[id.x].active == 0) return;
 
-    float dist = distance(items[id.x].position, deleteCenter);
-
-    if (dist <= deleteRadius)
+    if (distance(Items[id.x].pos, DelCenter) <= DelRadius)
     {
-        items[id.x].isActive = 0;
-        items[id.x].position = float2(-999, -999);
-        InterlockedAdd(GlobalStats[0], items[id.x].price);
+        Items[id.x].active = 0;
+        Items[id.x].pos = float2(-999, -999);
+        InterlockedAdd(Stats[0], Items[id.x].price);
     }
 }
 
-[numthreads(THREAD_GROUP_SIZE_X, 1, 1)]
+[numthreads(THREAD_GROUP_X, 1, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    if (items[id.x].isActive == 0) return;
+    if (Items[id.x].active == 0) return;
 
-    float2 currentPos = items[id.x].position;
-    // [Fix] 将 extraData 读取到局部变量，在循环中维护，最后写回。
-    // 这防止了在多迭代中因重复读取全局内存旧值而导致的重复取号问题。
-    int localExtraData = items[id.x].extraData;
+    // 1. Logic Update
+    float2 logicPos = Items[id.x].logicPos;
+    if (length(logicPos) < 0.001) logicPos = Items[id.x].pos;
     
-    int iterations = (int)ceil(deltaTime / FIXED_TIME_STEP);
-    if (iterations > 10) iterations = 10; 
-    float dt = deltaTime / iterations;
+    int state = Items[id.x].state;
+    float dt = DeltaTime;
+    float targetHeight = Items[id.x].targetHeight; // Read current target height
 
-    for (int i = 0; i < iterations; i++)
+    int gx = (int)round(logicPos.x);
+    int gy = (int)round(logicPos.y);
+
+    if (IsValid(gx, gy))
     {
-        int gridX = (int)round(currentPos.x);
-        int gridY = (int)round(currentPos.y);
-
-        if (!IsValidGrid(gridX, gridY)) break; // 使用 break 而不是 return，确保最后能写回状态
-
-        int gridIndex = GetGridIndex(gridX, gridY);
-        int tileType = MapGrid[gridIndex].type;
-
-        float2 targetDir = GetBeltDirection(tileType);
-        float2 centerPos = float2(gridX, gridY);
-        float2 toCenter = centerPos - currentPos;
-        float2 moveDir = targetDir;
-        bool isAligning = false;
-        
-        if (tileType == ID_SPLITTER)
-        {
-            // 传递 localExtraData
-            ProcessSplitter(gridIndex, int2(gridX, gridY), centerPos, currentPos, id.x, moveDir, isAligning, localExtraData);
-        }
-        else 
-        {
-            // [State Reset] 离开分流器后，重置局部状态
-            localExtraData = -1;
-
-            if (tileType >= BELT_INPUT_UP && tileType <= BELT_INPUT_RIGHT)
-            {
-                ProcessInputPort(toCenter, centerPos, moveDir, isAligning, currentPos);
-            }
-            else
-            {
-                ProcessBeltAlignment(targetDir, toCenter, centerPos, moveDir, isAligning, currentPos);
-            }
-        }
-
-        currentPos = CalculateNextPosition(int2(gridX, gridY), currentPos, moveDir, moveSpeed, dt, isAligning, centerPos, toCenter, (int)id.x);
+        // 核心逻辑：只调用 UpdateItem
+        // 分流器逻辑已经内嵌在 UpdateItem 中
+        logicPos = UpdateItem(int2(gx, gy), logicPos, dt, (int)id.x, state, targetHeight);
     }
 
-    items[id.x].velocity = (currentPos - items[id.x].position) / deltaTime;
-    items[id.x].position = currentPos;
-    // [Fix] 循环结束后，将最终状态写回全局 Buffer
-    items[id.x].extraData = localExtraData;
+    // 2. Visual Update
+    float2 visualPos = Items[id.x].pos;
+    float visualHeight = Items[id.x].height;
+    
+    float lerpFactor = 15.0 * dt; 
+    visualPos = lerp(visualPos, logicPos, saturate(lerpFactor));
+    
+    // Height Lerp (Slower for smoother elevator effect?)
+    // Or same speed?
+    visualHeight = lerp(visualHeight, targetHeight, saturate(lerpFactor));
+    
+    // 如果距离非常近，直接吸附
+    if (distance(visualPos, logicPos) < 0.001) visualPos = logicPos;
+    if (abs(visualHeight - targetHeight) < 0.001) visualHeight = targetHeight;
+
+    // 3. Write Back
+    Items[id.x].logicPos = logicPos;
+    Items[id.x].pos = visualPos;
+    Items[id.x].height = visualHeight;
+    Items[id.x].targetHeight = targetHeight;
+    Items[id.x].state = state;
 }

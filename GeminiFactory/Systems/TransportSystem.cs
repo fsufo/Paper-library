@@ -42,7 +42,7 @@ namespace GeminFactory
         // CPU 端维护的物品类型缓存 (Index -> ItemSO)
         private ItemSO[] itemTypes;
         
-        // 锁定机制：解决 GPU 回读延迟导致的“幽灵物品”问题
+        // 锁定机制：解决 GPU 回读延迟导致的"幽灵物品"问题
         // Key: GridIndex, Value: (LockedValue, RemainingFrames)
         private Dictionary<int, (int value, int frames)> gridLocks = new Dictionary<int, (int, int)>();
         #endregion
@@ -64,9 +64,9 @@ namespace GeminFactory
 
             // 检查结构体大小一致性
             int stride = Marshal.SizeOf(typeof(ItemData));
-            if (stride != 48)
+            if (stride != 56)
             {
-                Debug.LogError($"ItemData struct size mismatch! Expected 48 bytes, got {stride} bytes. Please check C# and HLSL definitions.");
+                Debug.LogError($"ItemData struct size mismatch! Expected 56 bytes, got {stride} bytes. Please check C# and HLSL definitions.");
             }
 
             buffers = new SimulationBuffers();
@@ -98,26 +98,26 @@ namespace GeminFactory
 
         void BindBuffers()
         {
-            itemMover.SetBuffer(kernelMoveItems, "items", buffers.ItemBuffer);
-            itemMover.SetBuffer(kernelMoveItems, "MapGrid", buffers.MapBuffer);
-            itemMover.SetBuffer(kernelMoveItems, "GridOccupancy", buffers.GridOccupancyBuffer);
-            itemMover.SetBuffer(kernelMoveItems, "GlobalStats", buffers.GlobalStatsBuffer);
-            itemMover.SetInt("mapWidth", mapManager.mapWidth);
-            itemMover.SetInt("mapHeight", mapManager.mapHeight);
-            itemMover.SetInt("maxItems", maxItems);
+            itemMover.SetBuffer(kernelMoveItems, "Items", buffers.ItemBuffer);
+            itemMover.SetBuffer(kernelMoveItems, "Map", buffers.MapBuffer);
+            itemMover.SetBuffer(kernelMoveItems, "Grid", buffers.GridOccupancyBuffer);
+            itemMover.SetBuffer(kernelMoveItems, "Stats", buffers.GlobalStatsBuffer);
+            itemMover.SetInt("Width", mapManager.mapWidth);
+            itemMover.SetInt("Height", mapManager.mapHeight);
+            itemMover.SetInt("MaxItems", maxItems);
 
-            itemMover.SetBuffer(kernelClearGrid, "GridOccupancy", buffers.GridOccupancyBuffer);
-            itemMover.SetInt("mapWidth", mapManager.mapWidth);
-            itemMover.SetInt("mapHeight", mapManager.mapHeight);
+            itemMover.SetBuffer(kernelClearGrid, "Grid", buffers.GridOccupancyBuffer);
+            itemMover.SetInt("Width", mapManager.mapWidth);
+            itemMover.SetInt("Height", mapManager.mapHeight);
 
-            itemMover.SetBuffer(kernelMarkGrid, "items", buffers.ItemBuffer);
-            itemMover.SetBuffer(kernelMarkGrid, "GridOccupancy", buffers.GridOccupancyBuffer);
-            itemMover.SetInt("mapWidth", mapManager.mapWidth);
-            itemMover.SetInt("mapHeight", mapManager.mapHeight);
-            itemMover.SetInt("maxItems", maxItems);
+            itemMover.SetBuffer(kernelMarkGrid, "Items", buffers.ItemBuffer);
+            itemMover.SetBuffer(kernelMarkGrid, "Grid", buffers.GridOccupancyBuffer);
+            itemMover.SetInt("Width", mapManager.mapWidth);
+            itemMover.SetInt("Height", mapManager.mapHeight);
+            itemMover.SetInt("MaxItems", maxItems);
 
-            itemMover.SetBuffer(kernelDeleteItems, "items", buffers.ItemBuffer);
-            itemMover.SetBuffer(kernelDeleteItems, "GlobalStats", buffers.GlobalStatsBuffer);
+            itemMover.SetBuffer(kernelDeleteItems, "Items", buffers.ItemBuffer);
+            itemMover.SetBuffer(kernelDeleteItems, "Stats", buffers.GlobalStatsBuffer);
         }
         #endregion
 
@@ -135,11 +135,12 @@ namespace GeminFactory
             // [Fix] 限制最大步长为 1/60 秒，防止低帧率下 Shader 内部多次迭代导致的碰撞穿透
             // 这意味着如果渲染帧率低于 60，游戏逻辑速度会变慢，但能保证物理稳定性
             float clampedDeltaTime = Mathf.Min(Time.deltaTime, 1.0f / 60.0f);
-            itemMover.SetFloat("deltaTime", clampedDeltaTime);
-            itemMover.SetFloat("moveSpeed", moveSpeed);
+            itemMover.SetFloat("DeltaTime", clampedDeltaTime);
+            itemMover.SetFloat("MoveSpeed", moveSpeed);
 
             // 1. 清除网格占用
-            int clearGroups = Mathf.CeilToInt((mapManager.mapWidth * mapManager.mapHeight) / 256.0f);
+            int totalCells = mapManager.mapWidth * mapManager.mapHeight * FactoryConstants.MAX_LAYERS;
+            int clearGroups = Mathf.CeilToInt(totalCells / 256.0f);
             itemMover.Dispatch(kernelClearGrid, clearGroups, 1, 1);
 
             // 2. 标记网格占用
@@ -236,13 +237,15 @@ namespace GeminFactory
 
             ItemData newItem = new ItemData
             {
-                position = new Vector2(pos.x, pos.y),
-                velocity = Vector2.zero,
-                isActive = 1,
+                pos = new Vector2(pos.x, pos.y),
+                logicPos = new Vector2(pos.x, pos.y), // Initialize logicPos same as pos
+                active = 1,
                 color = new Vector4(itemType.color.r, itemType.color.g, itemType.color.b, 1.0f),
                 price = itemType.price,
-                itemID = itemType.id,
-                extraData = -1 // [New] 初始化状态为 -1
+                id = itemType.id,
+                state = -1,
+                height = 0,
+                targetHeight = 0
             };
 
             ItemData[] dataWrapper = new ItemData[] { newItem };
@@ -265,7 +268,7 @@ namespace GeminFactory
         /// </summary>
         public void ConsumeItem(int itemIndex, int gridIndex)
         {
-            ItemData deadItem = new ItemData { isActive = 0 };
+            ItemData deadItem = new ItemData { active = 0 };
             ItemData[] wrapper = new ItemData[] { deadItem };
             buffers.ItemBuffer.SetData(wrapper, 0, itemIndex, 1);
             
@@ -297,8 +300,8 @@ namespace GeminFactory
 
         public void DeleteItemsInArea(Vector3 center, float radius)
         {
-            itemMover.SetFloats("deleteCenter", center.x, center.z);
-            itemMover.SetFloat("deleteRadius", radius);
+            itemMover.SetFloats("DelCenter", center.x, center.z);
+            itemMover.SetFloat("DelRadius", radius);
             int deleteGroups = Mathf.CeilToInt(maxItems / 64.0f);
             itemMover.Dispatch(kernelDeleteItems, deleteGroups, 1, 1);
         }
@@ -339,17 +342,18 @@ namespace GeminFactory
 
             for (int i = 0; i < maxItems; i++)
             {
-                if (currentItems[i].isActive != 0)
+                if (currentItems[i].active != 0)
                 {
                     savedItems.Add(new Systems.SaveLoad.SavedItem
                     {
-                        x = currentItems[i].position.x,
-                        y = currentItems[i].position.y,
-                        itemID = currentItems[i].itemID,
+                        x = currentItems[i].pos.x,
+                        y = currentItems[i].pos.y,
+                        itemID = currentItems[i].id,
                         price = currentItems[i].price,
                         r = currentItems[i].color.x,
                         g = currentItems[i].color.y,
-                        b = currentItems[i].color.z
+                        b = currentItems[i].color.z,
+                        height = currentItems[i].targetHeight // Save targetHeight as height
                     });
                 }
             }
@@ -368,13 +372,15 @@ namespace GeminFactory
                 var saved = savedItems[i];
                 newItems[i] = new ItemData
                 {
-                    position = new Vector2(saved.x, saved.y),
-                    velocity = Vector2.zero,
-                    isActive = 1,
+                    pos = new Vector2(saved.x, saved.y),
+                    logicPos = new Vector2(saved.x, saved.y),
+                    active = 1,
                     color = new Vector4(saved.r, saved.g, saved.b, 1.0f),
                     price = saved.price,
-                    itemID = saved.itemID,
-                    extraData = -1
+                    id = saved.itemID,
+                    state = -1,
+                    height = saved.height,       // Restore both to saved height
+                    targetHeight = saved.height
                 };
 
                 // 恢复 CPU 端缓存

@@ -26,7 +26,6 @@ namespace GeminFactory
 
         [Header("Ends / Starts")]
         public GameObject beltStartPrefab;
-        public GameObject beltEndPrefab;
         public GameObject beltSinglePrefab;
 
         [Header("End Turns (Optional)")]
@@ -38,5 +37,12 @@ namespace GeminFactory
         public GameObject beltEndTLeftPrefab;
         public GameObject beltEndTRightPrefab;
         public GameObject beltEndCrossPrefab;
+        
+        [Header("End Pieces")]
+        public GameObject beltEndPrefab;
+        
+        [Header("Elevator")]
+        public GameObject elevatorUpPrefab;
+        public GameObject elevatorDownPrefab;
     }
 }

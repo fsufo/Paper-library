@@ -76,7 +76,7 @@ namespace GeminFactory
         /// <summary>
         /// 更新传送带路径预览
         /// </summary>
-        public void UpdateBeltPreview(Vector2Int start, Vector2Int end, bool isAlternatePath)
+        public void UpdateBeltPreview(Vector3Int start, Vector3Int end, bool isAlternatePath)
         {
             // 清理建筑预览
             if (buildingPreviewObject != null) Object.Destroy(buildingPreviewObject);
@@ -85,28 +85,80 @@ namespace GeminFactory
             foreach (var obj in beltPreviewObjects) Object.Destroy(obj);
             beltPreviewObjects.Clear();
 
-            List<Vector2Int> points = buildingSystem.CalculatePathPoints(start, end, isAlternatePath);
+            List<Vector3Int> points = buildingSystem.CalculatePathPoints(start, end, isAlternatePath);
             GameObject prefab = beltTheme != null ? beltTheme.beltPrefab : null;
             if (prefab == null) return;
 
             for (int i = 0; i < points.Count; i++)
             {
-                Vector2Int current = points[i];
+                Vector3Int current = points[i];
                 
-                // 检查是否是建筑区域 (>=MIN_BUILDING_ID)，如果是则跳过预览生成
-                // 这样用户可以直观地看到传送带会在建筑处断开
-                    if (mapManager != null)
+                // Preview Multi-layer Elevator
+                if (i < points.Count - 1)
+                {
+                    Vector3Int next = points[i + 1];
+                    if (next.z != current.z)
                     {
-                        int idx = mapManager.GetIndex(current);
-                        if (mapManager.mapCells[idx].type >= FactoryConstants.MIN_BUILDING_ID) continue;
-                    }
+                        // 填充中间层预览
+                        int step = next.z > current.z ? 1 : -1;
+                        int elevatorBase = next.z > current.z ? FactoryConstants.ID_ELEVATOR_UP_BASE : FactoryConstants.ID_ELEVATOR_DOWN_BASE;
+                        int dir = buildingSystem.CalculateDirectionForPathIndex(points, i);
+                        int type = elevatorBase + dir; // 这里的 type 仅用于决定旋转，预览不区分 ID
 
-                int dir = buildingSystem.CalculateDirectionForPathIndex(points, i);
-                Quaternion rot = GetBeltRotation(dir);
-                
-                GameObject p = Object.Instantiate(prefab, new Vector3(current.x, 0.05f, current.y), rot, previewParent);
-                beltPreviewObjects.Add(p);
+                        for (int h = current.z + step; h != next.z; h += step)
+                        {
+                            Vector3Int midPos = new Vector3Int(current.x, current.y, h);
+                            CreatePreviewObject(midPos, dir, true); // true = isElevator
+                        }
+                        
+                        // 也要在当前层生成电梯预览 (替代普通传送带)
+                        CreatePreviewObject(current, dir, true);
+                        continue; // 跳过默认生成
+                    }
+                }
+
+                // 检查是否是建筑区域
+                if (mapManager != null)
+                {
+                    int idx = mapManager.GetIndex(current.x, current.y, current.z);
+                    if (mapManager.mapCells[idx].type >= FactoryConstants.MIN_BUILDING_ID) continue;
+                }
+
+                int direction = buildingSystem.CalculateDirectionForPathIndex(points, i);
+                CreatePreviewObject(current, direction, false);
             }
+        }
+        
+        private void CreatePreviewObject(Vector3Int pos, int dir, bool isElevator)
+        {
+            GameObject prefab = beltTheme != null ? beltTheme.beltPrefab : null;
+            if (prefab == null) return;
+
+            Quaternion rot = GetBeltRotation(dir);
+            float heightOffset = pos.z * 1.0f;
+            Vector3 spawnPos = new Vector3(pos.x, 0.05f + heightOffset, pos.y);
+            Vector3 scale = prefab.transform.localScale;
+
+            if (isElevator)
+            {
+                // 应用电梯视觉逻辑
+                // 假设是垂直电梯
+                // Up: -90, Down: 90. 但这里我们只知道它是电梯，不知道具体是 Up 还是 Down (除非传入)
+                // 简化：预览时统一显示为垂直柱子
+                // 为了区分 Up/Down，我们需要更多信息。但通常垂直柱子是对称的。
+                // 让我们假设是 Up (或者根据 dir 旋转)
+                
+                // 注意：PreviewSystem 不知道它是 Up 还是 Down，因为我们只传了 isElevator。
+                // 但我们可以推断：如果是在填充循环里，它肯定是垂直连接的一部分。
+                
+                rot = Quaternion.Euler(-90, 0, 0); // Vertical
+                scale = new Vector3(scale.x, 1.0f, scale.z); // Stretch to 1 layer height
+                spawnPos.y += 0.5f; // Center alignment
+            }
+
+            GameObject p = Object.Instantiate(prefab, spawnPos, rot, previewParent);
+            p.transform.localScale = scale;
+            beltPreviewObjects.Add(p);
         }
 
         /// <summary>

@@ -49,8 +49,11 @@ namespace GeminFactory
         {
             mapWidth = width;
             mapHeight = height;
-            gridOccupancyData = new int[mapWidth * mapHeight];
-            mapCells = new MapCell[mapWidth * mapHeight]; // Init cells
+            
+            // Support Layers
+            int totalSize = mapWidth * mapHeight * FactoryConstants.MAX_LAYERS;
+            gridOccupancyData = new int[totalSize];
+            mapCells = new MapCell[totalSize]; // Init cells
         }
         
         /// <summary>
@@ -87,19 +90,47 @@ namespace GeminFactory
         }
 
         /// <summary>
-        /// 将二维坐标转换为一维索引
+        /// 将二维坐标转换为一维索引 (默认 Layer 0)
         /// </summary>
         public int GetIndex(Vector2Int pos)
         {
-            return pos.y * mapWidth + pos.x;
+            return GetIndex(pos.x, pos.y, 0);
         }
 
         /// <summary>
-        /// 将一维索引转换为二维坐标
+        /// 将三维坐标转换为一维索引
+        /// </summary>
+        public int GetIndex(int x, int y, int layer)
+        {
+            // Index = Layer * (Width * Height) + Y * Width + X
+            // 这种布局方便 GPU 访问：每一层是连续的
+            return layer * (mapWidth * mapHeight) + y * mapWidth + x;
+        }
+        
+        public int GetIndex(Vector3Int pos)
+        {
+            return GetIndex(pos.x, pos.y, pos.z);
+        }
+
+        /// <summary>
+        /// 将一维索引转换为二维坐标 (忽略 Layer)
         /// </summary>
         public Vector2Int GetPosFromIndex(int index)
         {
-            return new Vector2Int(index % mapWidth, index / mapWidth);
+            int layerSize = mapWidth * mapHeight;
+            int localIndex = index % layerSize;
+            return new Vector2Int(localIndex % mapWidth, localIndex / mapWidth);
+        }
+        
+        /// <summary>
+        /// 将一维索引转换为三维坐标
+        /// </summary>
+        public Vector3Int GetPos3DFromIndex(int index)
+        {
+            int layerSize = mapWidth * mapHeight;
+            int layer = index / layerSize;
+            int localIndex = index % layerSize;
+            return new Vector3Int(localIndex % mapWidth, localIndex / mapWidth, layer);
         }
 
         /// <summary>

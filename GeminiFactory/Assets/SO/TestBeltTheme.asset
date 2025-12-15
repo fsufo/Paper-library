@@ -20,7 +20,6 @@ MonoBehaviour:
   beltTMergePrefab: {fileID: 8201030440221937309, guid: 3aa25b01f85c3484a9e58cbf5e12137c, type: 3}
   beltCrossPrefab: {fileID: 8201030440221937309, guid: 784ec0e7a2759ef4489c653edce38282, type: 3}
   beltStartPrefab: {fileID: 8201030440221937309, guid: 9a323819fa2425846b7832a1ae65d2a3, type: 3}
-  beltEndPrefab: {fileID: 8201030440221937309, guid: 3cae1d37a8cca0d43b4a049ce682ed5f, type: 3}
   beltSinglePrefab: {fileID: 8201030440221937309, guid: 8e75f0f5c5cbc8c4a9e4f7bd386d9e4a, type: 3}
   beltEndTurnLeftPrefab: {fileID: 8201030440221937309, guid: 3c53691576d753a4b8a86d02caf5c8c1, type: 3}
   beltEndTurnRightPrefab: {fileID: 8201030440221937309, guid: 03bc316e557a92a4b9b0a0e46a6cd263, type: 3}
@@ -28,3 +27,6 @@ MonoBehaviour:
   beltEndTLeftPrefab: {fileID: 8201030440221937309, guid: 4dbcb508fd1062341bea3fa05ce0d0f5, type: 3}
   beltEndTRightPrefab: {fileID: 8201030440221937309, guid: 5f48130d024188c40abd5c04302d9d06, type: 3}
   beltEndCrossPrefab: {fileID: 8201030440221937309, guid: cc2faacb0d649b147b0268093f4acba6, type: 3}
+  beltEndPrefab: {fileID: 8201030440221937309, guid: 3cae1d37a8cca0d43b4a049ce682ed5f, type: 3}
+  elevatorUpPrefab: {fileID: 8201030440221937309, guid: aa5f1fafbba324b4c83a45f79fa69152, type: 3}
+  elevatorDownPrefab: {fileID: 8201030440221937309, guid: d39715d2f15300f44ab7977c1a05925e, type: 3}

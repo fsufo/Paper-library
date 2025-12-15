@@ -33,13 +33,15 @@ Shader "Custom/InstancedItem"
             // 必须与 C# 和 Compute Shader 中的结构体保持一致
             struct ItemData
             {
-                float2 position;
-                float2 velocity;
+                float2 position;    // Visual Position
+                float2 logicPos;    //Logical Position
                 float4 color;
                 int isActive;
                 int price;
                 int itemID;
-                int padding; // 对齐
+                int state;
+                float height;       // [New] Visual Height
+                float targetHeight; // [New] Logic Height
             };
 
             StructuredBuffer<ItemData> items;
@@ -60,8 +62,9 @@ Shader "Custom/InstancedItem"
                 }
 
                 // 2. 位置计算
-                // 将 2D 模拟位置转换为 3D 世界坐标 (y=0.5 略高于地面)
-                float3 worldPos = float3(data.position.x, 0.5, data.position.y);
+                // 将 2D 模拟位置转换为 3D 世界坐标
+                // y = 0.5 (基础偏移) + height (层高)
+                float3 worldPos = float3(data.position.x, 0.5 + data.height, data.position.y);
                 float4 finalPos = float4(worldPos + v.vertex.xyz, 1.0);
 
                 o.vertex = UnityObjectToClipPos(finalPos);

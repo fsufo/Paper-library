@@ -10,13 +10,15 @@ namespace GeminFactory
     [StructLayout(LayoutKind.Sequential)]
     public struct ItemData
     {
-        public Vector2 position;
-        public Vector2 velocity;
+        public Vector2 pos;      // Visual Position
+        public Vector2 logicPos; // Logical Position
         public Vector4 color;
-        public int isActive;
+        public int active;       // 1 = active, 0 = inactive
         public int price;
-        public int itemID;
-        public int extraData; // [Rename] padding -> extraData, 用于存储分流器状态
+        public int id;           // Item ID
+        public int state;        // Splitter State
+        public float height;       // [New] Visual Height
+        public float targetHeight; // [New] Logic Height
     }
 
     /// <summary>
@@ -98,6 +100,15 @@ namespace GeminFactory
 
         // 分流器 ID
         public const int ID_SPLITTER = 600;
+
+        // 多层与垂直传送带定义
+        public const int MAX_LAYERS = 4;
+        
+        // 垂直传送带 (Elevator) ID 定义
+        // 700 + Direction (1-4) = 向上输送 (Elevator Up)
+        // 710 + Direction (1-4) = 向下输送 (Elevator Down)
+        public const int ID_ELEVATOR_UP_BASE = 700;
+        public const int ID_ELEVATOR_DOWN_BASE = 710;
     }
     #endregion
 }

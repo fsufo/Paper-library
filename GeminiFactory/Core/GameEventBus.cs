@@ -14,7 +14,8 @@ namespace GeminFactory
         /// <summary>请求在指定位置建造建筑</summary>
         public static event Action<Vector2Int, BuildingDataSO> OnBuildRequest;
         /// <summary>请求建造传送带路径 (Start, End, IsAlternatePath)</summary>
-        public static event Action<Vector2Int, Vector2Int, bool> OnBeltBuildRequest;
+        // [Modified] Support Vector3Int for Height
+        public static event Action<Vector3Int, Vector3Int, bool> OnBeltBuildRequest;
         /// <summary>请求删除指定位置的对象</summary>
         public static event Action<Vector2Int> OnDeleteRequest;
         /// <summary>请求检查指定位置的对象信息</summary>
@@ -77,7 +78,8 @@ namespace GeminFactory
         #region Methods to Publish Events
         
         public static void RequestBuild(Vector2Int pos, BuildingDataSO data) => OnBuildRequest?.Invoke(pos, data);
-        public static void RequestBeltBuild(Vector2Int start, Vector2Int end, bool altPath) => OnBeltBuildRequest?.Invoke(start, end, altPath);
+        // [Modified] Support Vector3Int
+        public static void RequestBeltBuild(Vector3Int start, Vector3Int end, bool altPath) => OnBeltBuildRequest?.Invoke(start, end, altPath);
         public static void RequestDelete(Vector2Int pos) => OnDeleteRequest?.Invoke(pos);
         public static void RequestInspect(Vector2Int pos) => OnInspectRequest?.Invoke(pos);
         public static void CancelInspect() => OnInspectCancel?.Invoke();

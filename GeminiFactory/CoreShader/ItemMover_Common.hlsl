@@ -1,82 +1,115 @@
 // --- Constants ---
-#define BELT_NONE 0
-#define BELT_UP 1
-#define BELT_DOWN 2
-#define BELT_LEFT 3
-#define BELT_RIGHT 4
+#define DIR_NONE 0
+#define DIR_UP 1
+#define DIR_DOWN 2
+#define DIR_LEFT 3
+#define DIR_RIGHT 4
 
-// 输入口 ID (11-14)
-#define BELT_INPUT_UP 11
-#define BELT_INPUT_DOWN 12
-#define BELT_INPUT_LEFT 13
-#define BELT_INPUT_RIGHT 14
+// Input Ports (11-14)
+#define ID_IN_UP 11
+#define ID_IN_DOWN 12
+#define ID_IN_LEFT 13
+#define ID_IN_RIGHT 14
 
-// 输出口 ID (15-18)
-#define BELT_OUTPUT_UP 15
-#define BELT_OUTPUT_DOWN 16
-#define BELT_OUTPUT_LEFT 17
-#define BELT_OUTPUT_RIGHT 18
+// Output Ports (15-18)
+#define ID_OUT_UP 15
+#define ID_OUT_DOWN 16
+#define ID_OUT_LEFT 17
+#define ID_OUT_RIGHT 18
 
-// 分流器 ID
 #define ID_SPLITTER 600
 
-#define THREAD_GROUP_SIZE_X 64
-#define THREAD_GROUP_SIZE_GRID 256
-#define FIXED_TIME_STEP 0.0166667
+// [New] Layer Constants
+#define MAX_LAYERS 4
 
-// --- Data Structures ---
-struct ItemData
-{
-    float2 position;
-    float2 velocity;
+#define THREAD_GROUP_X 64
+#define THREAD_GROUP_GRID 256
+
+// --- Simulation Constants ---
+#define CELL_SIZE 1.0
+#define CELL_HALF 0.5
+// 边界阈值：当物品距离中心超过此值时，尝试跨格
+// 留出 0.01 的余量防止浮点误差导致的边界闪烁
+#define BOUNDARY_THRESHOLD 0.49 
+#define SNAP_DIST 0.001
+#define ALIGN_THRESHOLD 0.01
+#define SPLITTER_REPICK_DIST_SQ 0.0025
+
+// --- State Bitmasks ---
+// State (int) layout:
+// Bits 0-3:  Splitter Direction (0-4)
+// Bit  4:    HasReservedNext (1 = Reserved)
+// Bits 5-31: Splitter Grid Index (Validation)
+
+#define MASK_DIR 0xF
+#define FLAG_RESERVED (1 << 4)
+#define MASK_INDEX 0xFFFFFFE0
+
+// --- Structs ---
+struct ItemData {
+    float2 pos;      // Visual Position
+    float2 logicPos; // Logical Position
     float4 color;
-    int isActive;
+    int active;
     int price;
-    int itemID;
-    int extraData; // [Splitter State] High 4 bits: Preferred Dir, Low 28 bits: GridIndex
+    int id;
+    int state;
+    float height;       // [New] Visual Height
+    float targetHeight; // [New] Logic Height (Layer)
 };
 
-struct MapCell
-{
+struct MapCell {
     int type;
-    int filterID;
-    int reserved1; // [Splitter Counter] Ticket Issuer
-    int reserved2;
+    int filter;
+    int data;
+    int padding;
 };
 
 // --- Buffers ---
-RWStructuredBuffer<ItemData> items;
-RWStructuredBuffer<MapCell> MapGrid;
-RWStructuredBuffer<int> GridOccupancy;
-RWStructuredBuffer<int> GlobalStats; // [0] = Money
+RWStructuredBuffer<ItemData> Items;
+RWStructuredBuffer<MapCell> Map;
+RWStructuredBuffer<int> Grid;
+RWStructuredBuffer<int> Stats;
 
 // --- Uniforms ---
-int mapWidth;
-int mapHeight;
-float deltaTime;
-float moveSpeed;
-int maxItems;
+int Width;
+int Height;
+float DeltaTime;
+float MoveSpeed;
+int MaxItems;
 
-// 删除相关参数
-float2 deleteCenter;
-float deleteRadius;
+float2 DelCenter;
+float DelRadius;
 
-// --- Helper Functions ---
-float2 GetBeltDirection(int beltValue)
-{
-    if (beltValue == BELT_UP || beltValue == BELT_INPUT_UP || beltValue == BELT_OUTPUT_UP) return float2(0, 1);
-    if (beltValue == BELT_DOWN || beltValue == BELT_INPUT_DOWN || beltValue == BELT_OUTPUT_DOWN) return float2(0, -1);
-    if (beltValue == BELT_LEFT || beltValue == BELT_INPUT_LEFT || beltValue == BELT_OUTPUT_LEFT) return float2(-1, 0);
-    if (beltValue == BELT_RIGHT || beltValue == BELT_INPUT_RIGHT || beltValue == BELT_OUTPUT_RIGHT) return float2(1, 0);
+// --- Helpers ---
+int GetIdx(int x, int y) { return y * Width + x; } // Legacy
+int GetIdx(int x, int y, int layer) { return layer * (Width * Height) + y * Width + x; } // 3D Index
+
+bool IsValid(int x, int y) { return x >= 0 && x < Width && y >= 0 && y < Height; }
+
+// [优化] 更紧凑的 GetDir 实现
+float2 GetDir(int type) {
+    // 归一化 type 到 0-3 (Up, Down, Left, Right)
+    // Up: 1, 11, 15 -> 0
+    // Down: 2, 12, 16 -> 1
+    // Left: 3, 13, 17 -> 2
+    // Right: 4, 14, 18 -> 3
+    
+    int d = -1;
+    if (type >= DIR_UP && type <= DIR_RIGHT) d = type - 1;
+    else if (type >= ID_IN_UP && type <= ID_IN_RIGHT) d = type - 11;
+    else if (type >= ID_OUT_UP && type <= ID_OUT_RIGHT) d = type - 15;
+    
+    if (d == 0) return float2(0, 1);
+    if (d == 1) return float2(0, -1);
+    if (d == 2) return float2(-1, 0);
+    if (d == 3) return float2(1, 0);
     return float2(0, 0);
 }
 
-int GetGridIndex(int x, int y)
-{
-    return y * mapWidth + x;
-}
-
-bool IsValidGrid(int x, int y)
-{
-    return x >= 0 && x < mapWidth && y >= 0 && y < mapHeight;
+bool IsBelt(int type) {
+    return (type >= DIR_UP && type <= DIR_RIGHT) ||
+           (type >= ID_IN_UP && type <= ID_IN_RIGHT) ||
+           (type >= ID_OUT_UP && type <= ID_OUT_RIGHT) ||
+           (type == ID_SPLITTER);
 }

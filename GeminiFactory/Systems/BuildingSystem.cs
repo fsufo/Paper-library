@@ -185,8 +185,63 @@ namespace GeminFactory
         /// </summary>
         public void DeleteObject(Vector2Int pos)
         {
-            int index = mapManager.GetIndex(pos);
+            // Temporary: Delete from all layers
+            for (int layer = 0; layer < FactoryConstants.MAX_LAYERS; layer++)
+            {
+                int index = mapManager.GetIndex(pos.x, pos.y, layer);
+                
+                // [New] Check for Elevator Chain Deletion
+                int type = mapManager.mapCells[index].type;
+                if (type >= FactoryConstants.ID_ELEVATOR_UP_BASE)
+                {
+                    // 如果是电梯，触发链式删除
+                    DeleteElevatorChain(new Vector3Int(pos.x, pos.y, layer), type);
+                }
+                else
+                {
+                    DeleteObjectAtIndex(index, pos);
+                }
+            }
+        }
+
+        private void DeleteElevatorChain(Vector3Int startPos, int startType)
+        {
+            // 确定搜索方向
+            // 如果是 Up (700+)，我们向上搜索出口，向下搜索入口？
+            // 或者简单点：只要是同位置、同类型的电梯，就全部删除。
+            // 这样用户点击电梯的任何一部分，整根柱子都会消失。
             
+            // 1. 向上搜索
+            for (int h = startPos.z; h < FactoryConstants.MAX_LAYERS; h++)
+            {
+                int idx = mapManager.GetIndex(startPos.x, startPos.y, h);
+                if (mapManager.mapCells[idx].type == startType)
+                {
+                    DeleteObjectAtIndex(idx, new Vector2Int(startPos.x, startPos.y));
+                }
+                else
+                {
+                    break; // 链条断裂
+                }
+            }
+            
+            // 2. 向下搜索
+            for (int h = startPos.z - 1; h >= 0; h--)
+            {
+                int idx = mapManager.GetIndex(startPos.x, startPos.y, h);
+                if (mapManager.mapCells[idx].type == startType)
+                {
+                    DeleteObjectAtIndex(idx, new Vector2Int(startPos.x, startPos.y));
+                }
+                else
+                {
+                    break; // 链条断裂
+                }
+            }
+        }
+
+        private void DeleteObjectAtIndex(int index, Vector2Int pos)
+        {
             // 1. 尝试删除建筑
             if (mapManager.worldObjects.TryGetValue(index, out GameObject obj))
             {
@@ -223,7 +278,6 @@ namespace GeminFactory
         public void ClearAll()
         {
             // 1. 收集所有需要删除的对象位置
-            // 使用 HashSet 避免重复 (因为多格建筑会占用多个网格)
             HashSet<Vector2Int> objectsToDelete = new HashSet<Vector2Int>();
 
             // 收集建筑
@@ -256,8 +310,7 @@ namespace GeminFactory
             }
             
             // 3. 强制清理残留数据 (双重保险)
-            // 理论上 DeleteObject 应该处理干净，但为了确保加载新地图时没有残留，可以重置 MapData
-            // 注意：这会清除所有物品占用数据，这正是我们想要的
+            // 应该处理干净，但为了确保加载新地图时没有残留，可以重置 MapData
             System.Array.Clear(mapManager.mapCells, 0, mapManager.mapCells.Length);
             System.Array.Clear(mapManager.gridOccupancyData, 0, mapManager.gridOccupancyData.Length);
             
@@ -271,7 +324,6 @@ namespace GeminFactory
             
             if (info != null && info.data != null)
             {
-                // 优化：直接使用 origin 和尺寸来确定范围
                 Vector2Int origin = info.origin;
                 int w = info.data.width;
                 int h = info.data.height;
@@ -293,7 +345,6 @@ namespace GeminFactory
                                 transportSystem.ConsumeItem(itemIndex, idx);
                             }
 
-                            // 确认引用是否匹配，防止误删
                             if (mapManager.worldObjects.TryGetValue(idx, out GameObject o) && o == obj)
                             {
                                 keysToRemove.Add(idx);
@@ -301,16 +352,9 @@ namespace GeminFactory
                         }
                     }
                 }
-
-                // 从工厂列表中移除
-                // if (info.data.buildingType != BuildingType.Shop)
-                // {
-                //     // Handled by ProductionSystem via events
-                // }
             }
             else
             {
-                // Fallback: 遍历所有对象 (针对异常情况)
                 foreach (var pair in mapManager.worldObjects)
                 {
                     if (pair.Value == obj) keysToRemove.Add(pair.Key);
@@ -319,11 +363,10 @@ namespace GeminFactory
 
             foreach (int idx in keysToRemove)
             {
-                // 如果该位置有数据，清除它
                 if (mapManager.mapCells[idx].type != 0)
                 {
                     mapManager.SetMapData(idx, 0);
-                    mapManager.SetFilterData(idx, 0); // 清除过滤
+                    mapManager.SetFilterData(idx, 0);
                     UpdateNeighbors(mapManager.GetPosFromIndex(idx));
                 }
                 mapManager.worldObjects.Remove(idx);
@@ -332,9 +375,6 @@ namespace GeminFactory
             Object.Destroy(obj);
             GameEventBus.PublishMapDataChanged();
             
-            // 发布对象删除事件 (ProductionSystem 会监听此事件来更新工厂列表)
-            // 注意：如果 info 为空 (异常情况)，我们可能无法获取 origin。
-            // 但在这种情况下，ProductionSystem 也无法通过 pos 找到对应的 FactoryState，所以没关系。
             if (info != null)
             {
                 GameEventBus.PublishObjectDeleted(info.origin);
@@ -346,20 +386,56 @@ namespace GeminFactory
         /// <summary>
         /// 建造传送带路径
         /// </summary>
-        public void BuildBeltPath(Vector2Int start, Vector2Int end, bool isAlternatePath)
+        public void BuildBeltPath(Vector3Int start, Vector3Int end, bool isAlternatePath)
         {
-            List<Vector2Int> points = CalculatePathPoints(start, end, isAlternatePath);
+            List<Vector3Int> points = CalculatePathPoints(start, end, isAlternatePath);
             HashSet<Vector2Int> dirtySet = new HashSet<Vector2Int>();
 
             for (int i = 0; i < points.Count; i++)
             {
-                Vector2Int current = points[i];
+                Vector3Int current = points[i];
+                Vector2Int pos2D = new Vector2Int(current.x, current.y);
+                
+                // 计算方向
                 int dir = CalculateDirectionForPathIndex(points, i);
                 
-                if (SetBeltDirection(current, dir, false))
+                // 默认类型为普通传送带
+                int type = dir; 
+                
+                // 检查是否需要生成电梯 (检测到与下一个点的高度差)
+                if (i < points.Count - 1)
                 {
-                    dirtySet.Add(current);
-                    foreach(var offset in neighborOffsets) dirtySet.Add(current + offset);
+                    Vector3Int next = points[i + 1];
+                    
+                    // [Multi-layer Elevator Logic]
+                    // 如果下一个点高度不同，说明这里是垂直连接的起点
+                    if (next.z != current.z)
+                    {
+                        bool isUp = next.z > current.z;
+                        int elevatorBase = isUp ? FactoryConstants.ID_ELEVATOR_UP_BASE : FactoryConstants.ID_ELEVATOR_DOWN_BASE;
+                        type = elevatorBase + dir;
+
+                        // 自动填充中间层 (确保电梯是连续的)
+                        // 如果是向上：填充 (current.z, next.z) 之间的层
+                        // 如果是向下：填充 (next.z, current.z) 之间的层
+                        int step = isUp ? 1 : -1;
+                        
+                        for (int h = current.z + step; h != next.z; h += step)
+                        {
+                            Vector3Int midPos = new Vector3Int(current.x, current.y, h);
+                            // 中间层也是电梯管道，方向与入口一致
+                            if (SetBeltDirection(midPos, type, false))
+                            {
+                                dirtySet.Add(pos2D);
+                            }
+                        }
+                    }
+                }
+
+                if (SetBeltDirection(current, type, false))
+                {
+                    dirtySet.Add(pos2D);
+                    foreach(var offset in neighborOffsets) dirtySet.Add(pos2D + offset);
                 }
             }
 
@@ -368,25 +444,36 @@ namespace GeminFactory
                 GameEventBus.PublishBeltChanged(pos);
             }
         }
-
-        public bool SetBeltDirection(Vector2Int pos, int direction, bool updateVisuals = true)
+        
+        public bool SetBeltDirection(Vector3Int pos, int type, bool updateVisuals = true)
         {
+            // Bounds Check
+            if (pos.x < 0 || pos.x >= mapManager.mapWidth || 
+                pos.y < 0 || pos.y >= mapManager.mapHeight || 
+                pos.z < 0 || pos.z >= FactoryConstants.MAX_LAYERS)
+            {
+                return false;
+            }
+
             int index = mapManager.GetIndex(pos);
             
             // 保护检查
-            if (mapManager.mapCells[index].type >= FactoryConstants.MIN_BUILDING_ID) return false;
+            if (mapManager.mapCells[index].type >= FactoryConstants.MIN_BUILDING_ID && mapManager.mapCells[index].type < FactoryConstants.ID_SPLITTER) return false;
             if (mapManager.worldObjects.ContainsKey(index)) return false;
 
-            // 仅当方向改变或没有传送带时更新
-            if (mapManager.mapCells[index].type != direction || !mapManager.beltObjects.ContainsKey(index))
+            // 仅当类型改变或没有传送带时更新
+            int currentType = mapManager.mapCells[index].type;
+
+            if (currentType != type || !mapManager.beltObjects.ContainsKey(index))
             {
-                mapManager.SetMapData(index, direction);
+                mapManager.SetMapData(index, type);
                 GameEventBus.PublishMapDataChanged();
                 
                 if (updateVisuals)
                 {
-                    GameEventBus.PublishBeltChanged(pos);
-                    UpdateNeighbors(pos);
+                    Vector2Int pos2D = new Vector2Int(pos.x, pos.y);
+                    GameEventBus.PublishBeltChanged(pos2D);
+                    UpdateNeighbors(pos2D);
                 }
                 return true;
             }
@@ -404,42 +491,92 @@ namespace GeminFactory
 
         #region Path Calculation Helpers
         /// <summary>
-        /// 计算两点之间的曼哈顿路径点
+        /// 计算两点之间的曼哈顿路径点 (3D)
+        /// <para>如果起点和终点高度不同，会在起点位置生成一个垂直转折点。</para>
         /// </summary>
-        public List<Vector2Int> CalculatePathPoints(Vector2Int start, Vector2Int end, bool isAlternatePath)
+        public List<Vector3Int> CalculatePathPoints(Vector3Int start, Vector3Int end, bool isAlternatePath)
         {
-            List<Vector2Int> points = new List<Vector2Int>();
+            List<Vector3Int> points = new List<Vector3Int>();
             int x = start.x;
             int y = start.y;
+            int z = end.z; // 路径主体高度跟随终点 (当前滚轮高度)
 
+            // 1. 生成 2D 路径
+            List<Vector2Int> path2D = new List<Vector2Int>();
             if (!isAlternatePath)
             {
-                // 先 X 后 Y
-                while (x != end.x) { points.Add(new Vector2Int(x, y)); x += (end.x > x ? 1 : -1); }
-                while (y != end.y) { points.Add(new Vector2Int(x, y)); y += (end.y > y ? 1 : -1); }
+                while (x != end.x) { path2D.Add(new Vector2Int(x, y)); x += (end.x > x ? 1 : -1); }
+                while (y != end.y) { path2D.Add(new Vector2Int(x, y)); y += (end.y > y ? 1 : -1); }
             }
             else
             {
-                // 先 Y 后 X
-                while (y != end.y) { points.Add(new Vector2Int(x, y)); y += (end.y > y ? 1 : -1); }
-                while (x != end.x) { points.Add(new Vector2Int(x, y)); x += (end.x > x ? 1 : -1); }
+                while (y != end.y) { path2D.Add(new Vector2Int(x, y)); y += (end.y > y ? 1 : -1); }
+                while (x != end.x) { path2D.Add(new Vector2Int(x, y)); x += (end.x > x ? 1 : -1); }
             }
+            path2D.Add(new Vector2Int(end.x, end.y));
 
-            points.Add(new Vector2Int(end.x, end.y));
+            // 2. 转换为 3D 路径
+            for (int i = 0; i < path2D.Count; i++)
+            {
+                // 特殊处理：起点变层逻辑
+                // 如果是路径的第一个点，且起点高度与终点高度不同
+                if (i == 0 && start.z != end.z)
+                {
+                    // 添加起点 (原始高度)
+                    points.Add(new Vector3Int(path2D[i].x, path2D[i].y, start.z));
+                    
+                    // 立即添加一个同位置但高度为目标高度的点
+                    // 这会触发 BuildBeltPath 中的电梯生成逻辑
+                    points.Add(new Vector3Int(path2D[i].x, path2D[i].y, end.z));
+                }
+                else
+                {
+                    // 其余点都在目标高度
+                    points.Add(new Vector3Int(path2D[i].x, path2D[i].y, z));
+                }
+            }
+            
             return points;
         }
 
         /// <summary>
         /// 计算路径上某一点的传送带方向
         /// </summary>
-        public int CalculateDirectionForPathIndex(List<Vector2Int> points, int index)
+        public int CalculateDirectionForPathIndex(List<Vector3Int> points, int index)
         {
-            if (index < points.Count - 1) return GetDirection(points[index], points[index + 1]);
-            else if (index > 0) return GetDirection(points[index - 1], points[index]);
+            // 如果当前点和下一点位置相同 (垂直连接)，方向应该跟随后续路径
+            if (index < points.Count - 1)
+            {
+                Vector3Int current = points[index];
+                Vector3Int next = points[index + 1];
+                
+                if (current.x == next.x && current.y == next.y)
+                {
+                    // 垂直连接，寻找下一个位置不同的点来确定方向
+                    for (int k = index + 1; k < points.Count; k++)
+                    {
+                        if (points[k].x != current.x || points[k].y != current.y)
+                        {
+                            return GetDirection(current, points[k]);
+                        }
+                    }
+                    // 如果后面没有位置不同的点 (即路径就在原地垂直)，则保持默认或跟随上一个
+                    if (index > 0) return CalculateDirectionForPathIndex(points, index - 1);
+                    return 4; // Default
+                }
+                
+                return GetDirection(current, next);
+            }
+            else if (index > 0) 
+            {
+                // 末端点，跟随上一个点的方向
+                // 如果上一个点是垂直连接点，递归查找
+                return CalculateDirectionForPathIndex(points, index - 1);
+            }
             return 4; // Default
         }
 
-        int GetDirection(Vector2Int from, Vector2Int to)
+        int GetDirection(Vector3Int from, Vector3Int to)
         {
             if (to.x > from.x) return 4;
             if (to.x < from.x) return 3;

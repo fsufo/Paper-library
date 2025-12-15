@@ -68,11 +68,34 @@ namespace GeminFactory
         public void UpdateBeltVisuals(Vector2Int pos)
         {
             if (!mapManager.IsValidGridPosition(pos)) return;
-            int index = mapManager.GetIndex(pos);
+
+            // 遍历所有层
+            for (int layer = 0; layer < FactoryConstants.MAX_LAYERS; layer++)
+            {
+                UpdateBeltVisualsForLayer(pos, layer);
+            }
+        }
+
+        private void UpdateBeltVisualsForLayer(Vector2Int pos, int layer)
+        {
+            int index = mapManager.GetIndex(pos.x, pos.y, layer);
             
             int data = mapManager.mapCells[index].type;
-            // 0=空, >=MIN_BUILDING_ID=建筑，都不生成传送带
-            if (data == 0 || data >= FactoryConstants.MIN_BUILDING_ID) return;
+            
+            // 0=空, >=MIN_BUILDING_ID=建筑 (且不是电梯)，都不生成传送带
+            // 电梯 (700+) 也是传送带的一种，需要渲染
+            bool isElevator = data >= FactoryConstants.ID_ELEVATOR_UP_BASE;
+            
+            if (data == 0 || (data >= FactoryConstants.MIN_BUILDING_ID && !isElevator)) 
+            {
+                // 如果该位置没有传送带，回收旧对象
+                if (mapManager.beltObjects.ContainsKey(index) && mapManager.beltObjects[index] != null)
+                {
+                    poolManager.RecycleBelt(mapManager.beltObjects[index]);
+                    mapManager.beltObjects.Remove(index);
+                }
+                return;
+            }
             
             // 额外检查：如果该位置被建筑占用 (即它是建筑的端口)，也不生成传送带模型
             if (mapManager.worldObjects.ContainsKey(index)) return;
@@ -81,15 +104,14 @@ namespace GeminFactory
             if (mapManager.beltObjects.ContainsKey(index) && mapManager.beltObjects[index] != null)
             {
                 poolManager.RecycleBelt(mapManager.beltObjects[index]);
+                mapManager.beltObjects.Remove(index);
             }
 
-            int myDir = mapManager.mapCells[index].type; // 1=Up, 2=Down, 3=Left, 4=Right
-            List<int> inputDirs = GetInputDirections(pos);
+            int myDir = data; 
+            if (isElevator) myDir = data % 10;
+
+            List<int> inputDirs = GetInputDirections(pos, layer);
             
-            // 计算输入掩码 (相对于自身方向)
-            // Bit 0: Back (1)
-            // Bit 1: Left (2)
-            // Bit 2: Right (4)
             int inputMask = 0;
             foreach (int inDir in inputDirs)
             {
@@ -99,11 +121,46 @@ namespace GeminFactory
                 else if (relDir == 2) inputMask |= 4; // Right
             }
 
-            bool isEnd = IsBeltEnd(pos, myDir);
-            GameObject prefabToUse = GetBeltPrefab(inputMask, isEnd);
+            bool isEnd = IsBeltEnd(pos, myDir, layer);
+            
+            GameObject prefabToUse = null;
+            if (isElevator)
+            {
+                // [Modified] Use dedicated Elevator Prefabs from SO
+                if (data >= FactoryConstants.ID_ELEVATOR_UP_BASE && data < FactoryConstants.ID_ELEVATOR_DOWN_BASE)
+                {
+                    prefabToUse = beltTheme.elevatorUpPrefab ?? beltTheme.beltPrefab;
+                }
+                else
+                {
+                    prefabToUse = beltTheme.elevatorDownPrefab ?? beltTheme.beltPrefab;
+                }
+            }
+            else
+            {
+                prefabToUse = GetBeltPrefab(inputMask, isEnd);
+            }
 
             Quaternion rotation = GetBeltRotation(myDir);
-            GameObject newBelt = poolManager.SpawnBelt(prefabToUse, new Vector3(pos.x, 0, pos.y), rotation);
+            
+            // 高度偏移
+            float heightOffset = layer * 1.0f; 
+            Vector3 spawnPos = new Vector3(pos.x, heightOffset, pos.y);
+
+            // [Modified] Elevator Visual Logic (Simplified)
+            // 不再进行硬编码的旋转和缩放，完全依赖 Prefab 本身的设置
+            if (isElevator)
+            {
+                // [Modified] Remove rotation for Elevator
+                // 用户需求：电梯全方向可进，出口由传送带决定，因此不需要旋转指示方向
+                rotation = Quaternion.identity; 
+            }
+            
+            GameObject newBelt = poolManager.SpawnBelt(prefabToUse, spawnPos, rotation);
+            
+            // [Fix] Always reset scale to Prefab's default
+            newBelt.transform.localScale = prefabToUse.transform.localScale;
+            
             mapManager.beltObjects[index] = newBelt;
         }
 
@@ -184,40 +241,50 @@ namespace GeminFactory
         #endregion
 
         #region Helpers
-        List<int> GetInputDirections(Vector2Int pos)
+        List<int> GetInputDirections(Vector2Int pos, int layer)
         {
             List<int> inputs = new List<int>();
-            CheckNeighborInput(pos + Vector2Int.up, 2, inputs);
-            CheckNeighborInput(pos + Vector2Int.down, 1, inputs);
-            CheckNeighborInput(pos + Vector2Int.left, 4, inputs);
-            CheckNeighborInput(pos + Vector2Int.right, 3, inputs);
+            CheckNeighborInput(pos + Vector2Int.up, 2, layer, inputs);
+            CheckNeighborInput(pos + Vector2Int.down, 1, layer, inputs);
+            CheckNeighborInput(pos + Vector2Int.left, 4, layer, inputs);
+            CheckNeighborInput(pos + Vector2Int.right, 3, layer, inputs);
             return inputs;
         }
 
-        void CheckNeighborInput(Vector2Int neighborPos, int requiredDir, List<int> inputs)
+        void CheckNeighborInput(Vector2Int neighborPos, int requiredDir, int layer, List<int> inputs)
         {
             if (mapManager.IsValidGridPosition(neighborPos))
             {
-                int idx = mapManager.GetIndex(neighborPos);
-                if (mapManager.mapCells[idx].type == requiredDir)
+                int idx = mapManager.GetIndex(neighborPos.x, neighborPos.y, layer);
+                int type = mapManager.mapCells[idx].type;
+                
+                // 处理电梯输入
+                if (type >= FactoryConstants.ID_ELEVATOR_UP_BASE) type %= 10;
+
+                if (type == requiredDir)
                 {
                     inputs.Add(requiredDir);
                 }
             }
         }
 
-        bool IsBeltEnd(Vector2Int pos, int myDir)
+        bool IsBeltEnd(Vector2Int pos, int myDir, int layer)
         {
             Vector2Int nextPos = pos + GetFlowVectorInt(myDir);
             if (!mapManager.IsValidGridPosition(nextPos)) return true;
             
-            int nextIdx = mapManager.GetIndex(nextPos);
+            int nextIdx = mapManager.GetIndex(nextPos.x, nextPos.y, layer);
             int nextDir = mapManager.mapCells[nextIdx].type;
 
             if (nextDir == 0) return true;
             
+            // [Fix] Elevator Connectivity
+            // 如果前方是电梯 (700+)，无论电梯朝向如何，都视为连接成功
+            // 因为电梯入口逻辑上允许任何方向进入 (除了空地)
+            if (nextDir >= FactoryConstants.ID_ELEVATOR_UP_BASE) return false;
+            
             // 如果前方是建筑，检查是否有输入端口
-            if (nextDir >= FactoryConstants.MIN_BUILDING_ID)
+            if (nextDir >= FactoryConstants.MIN_BUILDING_ID && nextDir < FactoryConstants.ID_SPLITTER) // Exclude Splitter/Elevator
             {
                 if (mapManager.worldObjects.TryGetValue(nextIdx, out GameObject obj))
                 {

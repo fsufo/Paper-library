@@ -135,16 +135,18 @@ namespace GeminFactory.Systems.SaveLoad
             foreach (var kvp in mapManager.beltObjects)
             {
                 int index = kvp.Key;
-                Vector2Int pos = mapManager.GetPosFromIndex(index);
+                Vector3Int pos = mapManager.GetPos3DFromIndex(index); // Use 3D Pos
                 int type = mapManager.mapCells[index].type;
                 
-                if (type >= 1 && type <= 4)
+                // 支持普通传送带 (1-4) 和电梯 (700+)
+                if ((type >= 1 && type <= 4) || type >= FactoryConstants.ID_ELEVATOR_UP_BASE)
                 {
                     data.belts.Add(new SavedBelt
                     {
                         x = pos.x,
                         y = pos.y,
-                        direction = type
+                        direction = type,
+                        height = pos.z // Save Layer
                     });
                 }
             }
@@ -261,7 +263,8 @@ namespace GeminFactory.Systems.SaveLoad
             // 4. Load Belts
             foreach (var savedBelt in data.belts)
             {
-                context.BuildingSystem.SetBeltDirection(new Vector2Int(savedBelt.x, savedBelt.y), savedBelt.direction);
+                // Pass Vector3Int
+                context.BuildingSystem.SetBeltDirection(new Vector3Int(savedBelt.x, savedBelt.y, savedBelt.height), savedBelt.direction);
             }
             
             // 5. Load Items
