@@ -154,6 +154,7 @@
     <div id="article-modal"><div class="close-btn" onclick="closeArticle()">&times;</div><div class="article-content markdown-body" id="markdown-container"></div></div>
     
     <script>
+        // 定义全局变量和状态
         let gData = null; // Store full data globally
         let allTags = new Set(); // Global Tag Registry
         let selectedTags = new Set(); // Current Tag Filter
@@ -352,6 +353,18 @@
         let zoomVelocity = 0;
         let zoomPivot = null;
         let mouseScreenPos = new THREE.Vector2(0, 0);
+        let isMouseDown = false; // Track mouse state
+
+        // 自定义飞行系统状态
+        const flyState = {
+            active: false,
+            startPos: new THREE.Vector3(),
+            endPos: new THREE.Vector3(),
+            startTarget: new THREE.Vector3(),
+            endTarget: new THREE.Vector3(),
+            startTime: 0,
+            duration: 0
+        };
 
         const modal = document.getElementById('article-modal');
         const box = document.getElementById('markdown-container');
@@ -383,8 +396,8 @@
                 if(modal.classList.contains('active')) {
                     closeArticle();
                 } else if(Graph && globalStartPos) {
-                    // 回到宇宙最佳视角
-                    Graph.cameraPosition(
+                    // 回到宇宙最佳视角(使用自定义飞行系统)
+                    startFly(
                         globalStartPos, 
                         {x:0, y:0, z:0}, 
                         2000
@@ -673,8 +686,47 @@
                 mouseScreenPos.y = -(e.clientY / window.innerHeight) * 2 + 1;
             });
 
+            // 辅助函数：用户交互时立即停止相机自动飞行，防止冲突卡顿
+            function stopCameraAnimation() {
+                // 核心修复：立即手动终止自定义飞行循环
+                flyState.active = false;
+                
+                // 强制清零惯性缩放
+                zoomVelocity = 0;
+                
+                if (!Graph) return;
+
+                // 1. 获取当前状态
+                const cam = Graph.camera();
+                const controls = Graph.controls();
+                
+                // 2. 停止 ForceGraph 内部可能存在的任何过渡
+                // 原理：将相机目标设为"当前位置"，时间设为0，强行结束之前的 Tween
+                const currentPos = cam.position.clone();
+                const currentTarget = controls.target.clone();
+                
+                Graph.cameraPosition(
+                    { x: currentPos.x, y: currentPos.y, z: currentPos.z },
+                    { x: currentTarget.x, y: currentTarget.y, z: currentTarget.z },
+                    0
+                );
+                
+                // 3. 强制 Controls 同步，防止这一帧出现跳变
+                controls.update();
+            }
+
+            // 监听交互事件以打断自动飞行
+            const graphEl = document.getElementById('3d-graph');
+            // 注意：使用 Capture 捕获模式，确保在 OrbitControls 响应之前就停止动画
+            graphEl.addEventListener('mousedown', (e) => { isMouseDown = true; stopCameraAnimation(); }, true);
+            graphEl.addEventListener('mouseup', () => { isMouseDown = false; }, true);
+            graphEl.addEventListener('touchstart', stopCameraAnimation, { passive: true, capture: true });
+
             document.addEventListener('wheel', (e) => {
                 if(modal.classList.contains('active') || e.target.closest('.search-wrapper')) return;
+                
+                stopCameraAnimation(); // 滚轮介入优先权最高
+                
                 e.preventDefault();
                 // 累加动力，而不是直接位移
                 // 方向修正：deltaY > 0 是向下滚(拉近/拉远取决于习惯)，通常滚轮向下是View变大(离得更远)
@@ -689,6 +741,32 @@
         // 动画循环
         function animateFrame() {
             requestAnimationFrame(animateFrame);
+
+            // 0. 处理自定义平滑飞行
+            if (flyState.active) {
+                const now = Date.now();
+                const elapsed = now - flyState.startTime;
+                
+                if (elapsed >= flyState.duration) {
+                    flyState.active = false;
+                    // Ensure final state
+                    Graph.camera().position.copy(flyState.endPos);
+                    Graph.controls().target.copy(flyState.endTarget);
+                    Graph.controls().update();
+                } else {
+                    const progress = easeInOutCubic(elapsed / flyState.duration);
+                    
+                    // Lerp Position
+                    const newPos = new THREE.Vector3().lerpVectors(flyState.startPos, flyState.endPos, progress);
+                    Graph.camera().position.copy(newPos);
+                    
+                    // Lerp Target (LookAt)
+                    const newTarget = new THREE.Vector3().lerpVectors(flyState.startTarget, flyState.endTarget, progress);
+                    Graph.controls().target.copy(newTarget);
+                    
+                    Graph.controls().update();
+                }
+            }
             
             // A. 处理惯性缩放
             if (Math.abs(zoomVelocity) > 0.0001) {
@@ -817,29 +895,47 @@
 
         let searchIndex = -1;
 
-        // 飞行控制核心函数
+        // 核心飞行函数
+        function startFly(endPos, endTarget, duration = 1500) {
+            if (!Graph) return;
+            const cam = Graph.camera();
+            const controls = Graph.controls();
+
+            flyState.startPos.copy(cam.position);
+            flyState.startTarget.copy(controls.target);
+            
+            // Handle raw object input for endPos
+            if (endPos.x !== undefined) flyState.endPos.set(endPos.x, endPos.y, endPos.z);
+            else flyState.endPos.copy(endPos);
+
+            // Handle raw object input for endTarget
+            if (endTarget.x !== undefined) flyState.endTarget.set(endTarget.x, endTarget.y, endTarget.z);
+            else flyState.endTarget.copy(endTarget);
+            
+            flyState.startTime = Date.now();
+            flyState.duration = duration;
+            flyState.active = true;
+        }
+
+        // Cubic Ease InOut
+        function easeInOutCubic(t) {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+
         function flyTo(node, duration = 1500) {
-            // 计算更平滑的飞行目标：保持当前视角方向，只拉近距离
             const cam = Graph.camera();
             const nodePos = new THREE.Vector3(node.x, node.y, node.z);
             const camPos = new THREE.Vector3(cam.position.x, cam.position.y, cam.position.z);
             
-            // 计算从星球指向相机的向量
-            const dir = new THREE.Vector3().subVectors(camPos, nodePos).normalize();
-            
-            // 如果相机和星球重合(极端情况)，使用默认方向
+            // Desired direction
+            let dir = new THREE.Vector3().subVectors(camPos, nodePos).normalize();
             if (dir.lengthSq() < 0.001) dir.set(0, 0, 1);
             
-            // 目标位置：距离星球表面约 180 单位
             const dist = 180;
             const targetPos = nodePos.clone().add(dir.multiplyScalar(dist));
             
-            // 执行平滑飞行，始终注视星球
-            Graph.cameraPosition(
-                { x: targetPos.x, y: targetPos.y, z: targetPos.z }, // Target Position
-                node, // Look At
-                duration // Duration
-            );
+            // Start custom flight
+            startFly(targetPos, nodePos, duration);
         }
 
         function jumpToNode(id, openDoc = false) {
