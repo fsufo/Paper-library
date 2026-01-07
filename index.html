@@ -158,6 +158,56 @@
         let allTags = new Set(); // Global Tag Registry
         let selectedTags = new Set(); // Current Tag Filter
         let activeLookup = {}; // 独立的全局查找表，解耦 Node 对象
+        let isSearchHovering = false; // Flag to track search interaction
+
+        // 统一的高亮模式设置函数
+        function setHighlightMode(node) {
+            hoverNode = node || null; 
+            // Only set pointer cursor if we are highlighting a specific node (and not just clearing)
+            // Note: Real-time cursor update is handled mainly by onNodeHover for the graph
+            if(!isSearchHovering) document.body.style.cursor = node ? 'pointer' : null;
+            
+            highlightNodes.clear(); highlightLinks.clear();
+            
+            // Top Info Bar Update
+            const infoBar = document.getElementById('top-info-bar');
+            if(node) {
+                document.getElementById('info-title').innerText = node.label;
+                
+                let displayTags = '';
+                if (node.all_tags && node.all_tags.length > 0) {
+                    displayTags = node.all_tags.map(t => `#${t}`).join(' ');
+                } else if(node.group) {
+                        displayTags = `#${node.group}`;
+                }
+                document.getElementById('info-tag').innerText = displayTags;
+                
+                infoBar.style.opacity = 1;
+            } else {
+                infoBar.style.opacity = 0;
+            }
+            
+            if (node) {
+                highlightNodes.add(node);
+                
+                // 使用全局查找表 activeLookup
+                const entry = activeLookup[node.id];
+                if(entry) {
+                    const { nodes } = Graph.graphData();
+                    entry.neighbors.forEach(nid => {
+                        const neighborNode = nodes.find(n => n.id === nid);
+                        if(neighborNode) highlightNodes.add(neighborNode);
+                    });
+                    entry.links.forEach(l => highlightLinks.add(l));
+                }
+            }
+
+            // 动态更新粒子流向
+            Graph.linkDirectionalParticles(link => (highlightLinks.has(link) && !link.isClusterLink) ? 3 : 0);
+            Graph.linkDirectionalParticleWidth(link => highlightLinks.has(link) ? 1.5 : 0);
+            Graph.linkDirectionalParticleColor(link => link.sourceNode ? link.sourceNode.color : '#ffffff'); 
+            Graph.linkDirectionalParticleSpeed(link => 0.005);
+        }
 
         function updateGraphFilter() {
             if(!gData || !Graph) return;
@@ -455,60 +505,31 @@
             })
             .onNodeHover(node => {
                 if(modal.classList.contains('active')) return;
-                hoverNode = node || null; document.body.style.cursor = node ? 'pointer' : null;
-                highlightNodes.clear(); highlightLinks.clear();
-                
-                // Top Info Bar Update
-                const infoBar = document.getElementById('top-info-bar');
-                if(node) {
-                    document.getElementById('info-title').innerText = node.label;
-                    
-                    let displayTags = '';
-                    if (node.all_tags && node.all_tags.length > 0) {
-                        displayTags = node.all_tags.map(t => `#${t}`).join(' ');
-                    } else if(node.group) {
-                         displayTags = `#${node.group}`;
-                    }
-                    document.getElementById('info-tag').innerText = displayTags;
-                    
-                    infoBar.style.opacity = 1;
-                } else {
-                    infoBar.style.opacity = 0;
-                }
-                
-                if (node) {
-                    highlightNodes.add(node);
-                    
-                    // 使用全局查找表 activeLookup
-                    const entry = activeLookup[node.id];
-                    if(entry) {
-                        // 找回 Node 对象并高亮
-                        const { nodes } = Graph.graphData();
-                        entry.neighbors.forEach(nid => {
-                            const neighborNode = nodes.find(n => n.id === nid);
-                            if(neighborNode) highlightNodes.add(neighborNode);
-                        });
-                        // 高亮连线
-                        entry.links.forEach(l => highlightLinks.add(l));
-                    }
-                }
+                if(isSearchHovering) return; // Ignore canvas hover if interacting with search UI
 
-                // 动态更新粒子流向 (Cluster Link 不显示粒子)
-                Graph.linkDirectionalParticles(link => (highlightLinks.has(link) && !link.isClusterLink) ? 3 : 0);
-                // 粒子超微小 (0.6)，颜色强制跟随源星球颜色
-                Graph.linkDirectionalParticleWidth(link => highlightLinks.has(link) ? 1.5 : 0);
-                Graph.linkDirectionalParticleColor(link => link.sourceNode ? link.sourceNode.color : '#ffffff'); 
-                Graph.linkDirectionalParticleSpeed(link => 0.005);
+                if (node) {
+                    setHighlightMode(node);
+                } else {
+                    // Fallback to selectedNode if exists (persist highlight)
+                    if (selectedNode) {
+                        setHighlightMode(selectedNode);
+                        document.body.style.cursor = 'default'; // Correct cursor for background
+                    } else {
+                        setHighlightMode(null);
+                    }
+                }
             })
             .onNodeClick(node => {
                 if(!node) return;
+                selectedNode = node; // Set selection
+                setHighlightMode(node); // Activate highlight
                 
                 // 计算当前相机到目标节点的真实距离
                 const camPos = Graph.camera().position;
                 const dist = Math.hypot(camPos.x - node.x, camPos.y - node.y, camPos.z - node.z);
                 
-                // 距离阈值：例如 flyTo 停在 60 处，我们在 80 以内认为已到达
-                const ARRIVAL_THRESHOLD = 80;
+                // 距离阈值：例如 flyTo 停在 180 处，我们在 200 以内认为已到达
+                const ARRIVAL_THRESHOLD = 200;
 
                 // 若已是选中状态 且 距离足够近 -> 打开文章
                 if (selectedNode && selectedNode.id === node.id && dist < ARRIVAL_THRESHOLD) {
@@ -521,6 +542,7 @@
             })
             .onBackgroundClick(() => {
                 selectedNode = null;
+                setHighlightMode(null); // Clear highlight manually
                 // Close search if active
                 const sr = document.getElementById('search-results');
                 if (sr.classList.contains('active')) {
@@ -789,8 +811,8 @@
             // 如果相机和星球重合(极端情况)，使用默认方向
             if (dir.lengthSq() < 0.001) dir.set(0, 0, 1);
             
-            // 目标位置：距离星球表面约 60 单位
-            const dist = 60;
+            // 目标位置：距离星球表面约 180 单位
+            const dist = 180;
             const targetPos = nodePos.clone().add(dir.multiplyScalar(dist));
             
             // 执行平滑飞行，始终注视星球
@@ -810,9 +832,8 @@
                 // 执行平滑飞行
                 flyTo(node, 1200);
                 
-                // Highlight
-                hoverNode = node; highlightNodes.clear(); highlightNodes.add(node);
-                if(node.neighbors) node.neighbors.forEach(n => highlightNodes.add(n));
+                // Highlight Mode
+                setHighlightMode(node);
                 
                 if(openDoc) {
                     setTimeout(() => openArticle(node), 1200);
@@ -944,9 +965,11 @@
         // Prevent graph rotation when hovering search
         const searchWrapper = document.querySelector('.search-wrapper');
         searchWrapper.addEventListener('mouseenter', () => {
+            isSearchHovering = true;
             if(Graph && Graph.controls()) Graph.controls().enabled = false;
         });
         searchWrapper.addEventListener('mouseleave', () => {
+             isSearchHovering = false;
              if(Graph && Graph.controls()) Graph.controls().enabled = true;
         });
 
