@@ -633,7 +633,7 @@
             });
 
             document.addEventListener('wheel', (e) => {
-                if(modal.classList.contains('active')) return;
+                if(modal.classList.contains('active') || e.target.closest('.search-wrapper')) return;
                 e.preventDefault();
                 // 累加动力，而不是直接位移
                 // 方向修正：deltaY > 0 是向下滚(拉近/拉远取决于习惯)，通常滚轮向下是View变大(离得更远)
@@ -940,6 +940,15 @@
             items.forEach(el => el.classList.remove('selected'));
             if(items[searchIndex]) { items[searchIndex].classList.add('selected'); items[searchIndex].scrollIntoView({block:'nearest'}); }
         }
+
+        // Prevent graph rotation when hovering search
+        const searchWrapper = document.querySelector('.search-wrapper');
+        searchWrapper.addEventListener('mouseenter', () => {
+            if(Graph && Graph.controls()) Graph.controls().enabled = false;
+        });
+        searchWrapper.addEventListener('mouseleave', () => {
+             if(Graph && Graph.controls()) Graph.controls().enabled = true;
+        });
 
         // 背景星空 (修复版：确保可见性 + 距离渐隐)
         setTimeout(() => {
