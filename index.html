@@ -655,10 +655,10 @@
 
             // 使用标准材质 + shader注入，确保最大兼容性
             const mat = new THREE.PointsMaterial({
-                size: 3,
+                size: 6, // 增大尺寸以减少像素级闪烁
                 vertexColors: true,
                 transparent: true,
-                opacity: 0.8,
+                opacity: 0.3, // 降低透明度，使其更像背景噪音
                 sizeAttenuation: true,
                 depthWrite: false,
                 blending: THREE.AdditiveBlending
@@ -685,9 +685,9 @@
                     `
                     // 距离 < 200 渐隐
                     float fade = smoothstep(100.0, 300.0, vDist);
-                    // 圆形粒子裁切
+                    // 圆形粒子裁切 (使用更柔和的边缘 0.1 -> 0.5)
                     vec2 xy = gl_PointCoord.xy - vec2(0.5);
-                    float alpha = (1.0 - smoothstep(0.3, 0.5, length(xy))) * fade * opacity;
+                    float alpha = (1.0 - smoothstep(0.1, 0.5, length(xy))) * fade * opacity;
                     vec4 diffuseColor = vec4( diffuse, alpha );
                     `
                 );
