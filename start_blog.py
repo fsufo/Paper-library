@@ -82,6 +82,9 @@ def build_data():
         
         # 2. Markdown Links [Title](./Target.md)
         for match in link_pattern_md.findall(node['content']):
+            if match.startswith('http') or match.startswith('//'):
+                continue
+                
             # match is the URL part, e.g. "./posts/Target.md" or "Target.md"
             target_filename = match.split('/')[-1] # Extract filename
             target_id = os.path.splitext(target_filename)[0] # Remove extension
