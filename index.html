@@ -4,491 +4,167 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Galactic Blog</title>
-    <!-- 三方库 -->
     <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
     <script src="https://unpkg.com/3d-force-graph@1.73.1/dist/3d-force-graph.min.js"></script>
+    <script src="https://unpkg.com/three-spritetext@1.8.2/dist/three-spritetext.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        /* --- 基础样式 --- */
-        body { 
-            margin: 0; padding: 0; overflow: hidden; 
-            background-color: #000000; 
-            color: #fff; 
-            font-family: 'Segoe UI', sans-serif;
-            /* 1. 圆润 Q 弹胖箭头 */
-            cursor: url('data:image/svg+xml;utf8,<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 3.5L11 20L14 12.5L21.5 9L5.5 3.5Z" fill="white" stroke="%23222" stroke-width="2.5" stroke-linejoin="round"/></svg>') 5 3, auto;
-        }
-        
+        body { margin: 0; padding: 0; overflow: hidden; background-color: #000; color: #fff; font-family: 'Segoe UI', sans-serif; cursor: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 5L12 21L15.5 13.5L23 10L5 5Z" fill="white" stroke="%23333" stroke-width="2.5" stroke-linejoin="round" style="filter:drop-shadow(0px 2px 3px rgba(0,0,0,0.3));"/></svg>') 6 6, auto; }
         #3d-graph { width: 100vw; height: 100vh; position: absolute; z-index: 1; }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(100, 150, 255, 0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(100, 150, 255, 0.6); }
 
-        /* --- 搜索框 --- */
-        #search-container {
-            position: fixed; top: 20px; right: 30px; z-index: 50;
-            background: rgba(10, 10, 15, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 24px;
-            padding: 8px 16px;
-            display: flex; align-items: center;
-            backdrop-filter: blur(5px);
-            transition: border-color 0.3s;
-        }
-        #search-container:hover { border-color: rgba(255, 255, 255, 0.6); }
-        #search-input {
-            background: transparent; border: none; color: #fff;
-            outline: none; font-size: 14px; width: 180px;
-            margin-left: 8px; font-family: inherit;
-        }
-        .search-icon { font-size: 16px; color: #aaa; }
+        .search-wrapper { position: fixed; top: 20px; right: 30px; z-index: 50; width: 240px; }
+        #search-container { background: rgba(10, 15, 25, 0.85); border: 1px solid rgba(100, 150, 255, 0.3); border-radius: 20px; padding: 8px 16px; display: flex; align-items: center; backdrop-filter: blur(8px); transition: all 0.3s; }
+        #search-container:focus-within { border-color: rgba(100, 200, 255, 0.9); box-shadow: 0 0 20px rgba(0, 100, 255, 0.3); }
+        #search-input { background: transparent; border: none; color: #fff; outline: none; font-size: 14px; width: 100%; margin-left: 8px; font-family: inherit; }
+        #search-results { margin-top: 10px; background: rgba(8, 10, 16, 0.95); border: 1px solid rgba(40, 50, 70, 0.8); border-radius: 12px; max-height: 400px; overflow-y: auto; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+        #search-results.active { display: block; }
+        .search-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; color: #ccc; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+        .search-item:hover, .search-item.selected { background: rgba(30, 100, 200, 0.3); color: #fff; }
+        .search-tag { font-size: 11px; color: #88a; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; }
 
-        /* --- 极简飞行猫 --- */
-        #helicopter-cat {
-            position: fixed; pointer-events: none; z-index: 9999;
-            width: 32px; height: 24px;
-            top: -100px; left: -100px;
-            will-change: transform, top, left;
-        }
-        .cat-body-container {
-            width: 100%; height: 100%; position: relative;
-            animation: float 2.5s ease-in-out infinite;
-        }
-        .cat-body {
-            width: 32px; height: 22px; background: #fff;
-            border-radius: 16px 16px 12px 12px;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
-            position: absolute; bottom: 0;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .cat-ear {
-            position: absolute; top: -4px;
-            width: 0; height: 0;
-            border-left: 5px solid transparent; border-right: 5px solid transparent;
-            border-bottom: 10px solid #fff;
-        }
+        #helicopter-cat { position: fixed; pointer-events: none; z-index: 9999; transform: scale(0.65); transform-origin: top left; width: 32px; height: 24px; top: -100px; left: -100px; }
+        .cat-body-container { width: 100%; height: 100%; position: relative; animation: float 2.5s ease-in-out infinite; }
+        .cat-body { width: 32px; height: 22px; background: #fff; border-radius: 16px 16px 12px 12px; box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); position: absolute; bottom: 0; display: flex; justify-content: center; align-items: center; }
+        .cat-ear { position: absolute; top: -4px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 10px solid #fff; }
         .cat-ear.left { left: 3px; transform: rotate(-15deg); }
         .cat-ear.right { right: 3px; transform: rotate(15deg); }
-        .cat-face {
-            position: absolute; top: 8px; width: 100%;
-            display: flex; justify-content: center; gap: 6px;
-        }
-        .eye {
-            width: 3px; height: 3px; background: #333;
-            border-radius: 50%; transition: transform 0.1s, height 0.1s;
-        }
+        .cat-face { position: absolute; top: 8px; width: 100%; display: flex; justify-content: center; gap: 6px; }
+        .eye { width: 3px; height: 3px; background: #333; border-radius: 50%; transition: 0.1s; }
         .eye.closed { height: 1px; transform: scaleX(1.5); background: #555; }
-        .propeller {
-            position: absolute; top: -10px; left: 50%;
-            width: 28px; height: 2px; background: rgba(255, 255, 255, 0.9);
-            transform: translateX(-50%); border-radius: 2px;
-            animation: spin 0.08s linear infinite;
-        }
-        .propeller::after {
-            content: ''; position: absolute; top: 100%; left: 50%;
-            width: 2px; height: 6px; background: #ccc; transform: translateX(-50%);
-        }
-        #zzz-bubble {
-            position: absolute; top: -20px; right: -15px;
-            font-size: 10px; color: #fff; font-weight: bold;
-            opacity: 0; transition: opacity 0.5s;
-        }
-        #zzz-bubble.active { opacity: 0.8; animation: floatUp 2s infinite; }
-        
+        .propeller { position: absolute; top: -10px; left: 50%; width: 28px; height: 2px; background: rgba(255, 255, 255, 0.9); transform: translateX(-50%); animation: spin 0.08s linear infinite; }
+        .propeller::after { content: ''; position: absolute; top: 100%; left: 50%; width: 2px; height: 6px; background: #ccc; transform: translateX(-50%); }
+        #zzz-bubble { position: absolute; top: -20px; right: -15px; font-size: 10px; color: #fff; font-weight: bold; opacity: 0; transition: opacity 0.5s; }
+        #zzz-bubble.active { opacity: 0.9; animation: floatUp 2s infinite; }
         @keyframes floatUp { 0% { transform: translateY(0); opacity: 0.8; } 100% { transform: translateY(-10px); opacity: 0; } }
         @keyframes spin { 0% { transform: translateX(-50%) rotateY(0deg); } 100% { transform: translateX(-50%) rotateY(360deg); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
 
-        /* --- 文章阅读器 --- */
-        #article-modal {
-            display: none; position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(6, 6, 10, 0.96); 
-            z-index: 1000;
-            opacity: 0; transition: opacity 0.3s;
-            overflow-y: auto;
-        }
+        #article-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 5, 8, 0.96); z-index: 1000; opacity: 0; transition: opacity 0.3s; overflow-y: auto; }
         #article-modal.active { display: block; opacity: 1; }
-        
-        .article-content {
-            max-width: 800px; margin: 80px auto; padding: 40px;
-            background: rgba(22, 27, 36, 0.4); 
-            border: 1px solid rgba(48, 54, 61, 0.5);
-            border-radius: 12px;
-        }
-        .close-btn { position: fixed; top: 30px; right: 50px; font-size: 32px; cursor: pointer; color: #aaa; z-index: 1100; }
-        .close-btn:hover { color: #fff; transform: scale(1.1); }
-
-        /* Markdown Reset */
-        .markdown-body { line-height: 1.7; color: #e6edf3; }
-        .markdown-body h1, .markdown-body h2 { border-bottom: 1px solid #30363d; padding-bottom: 0.3em; margin-top: 1.5em; color: #fff; }
-        .markdown-body a { color: #4493f8; text-decoration: none; }
-        .markdown-body a:hover { text-decoration: underline; }
-        .markdown-body code { background: rgba(110, 118, 129, 0.4); padding: 0.2em 0.4em; border-radius: 6px; font-family: 'Consolas', monospace; }
-        .markdown-body pre { background: #0d1117; padding: 16px; border-radius: 6px; overflow: auto; border: 1px solid #30363d; }
+        .article-content { max-width: 800px; margin: 60px auto; padding: 40px; background: rgba(20, 25, 35, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
+        .close-btn { position: fixed; top: 30px; right: 50px; font-size: 32px; cursor: pointer; color: #888; z-index: 1100; }
+        .close-btn:hover { color: #fff; }
+        .markdown-body { line-height: 1.7; color: #d0d7de; }
+        .markdown-body h1 { border-bottom: 1px solid #30363d; padding-bottom: 0.3em; margin-top: 1.5em; color: #fff; }
+        .markdown-body a { color: #58a6ff; text-decoration: none; }
+        .markdown-body code { background: rgba(110, 118, 129, 0.4); padding: 0.2em 0.4em; border-radius: 6px; font-family: monospace; }
+        .markdown-body pre { background: #161b22; padding: 16px; border-radius: 6px; overflow: auto; }
         .markdown-body img { max-width: 100%; border-radius: 6px; }
-
-        .tip {
-            position: fixed; top: 20px; left: 20px; z-index: 10;
-            color: rgba(255,255,255,0.3); font-size: 12px; pointer-events: none;
-            letter-spacing: 1px;
-        }
     </style>
 </head>
 <body>
-
     <div id="3d-graph"></div>
-
-    <div class="tip">UNIVERSE OS v3.1</div>
-
-    <!-- 搜索框 -->
-    <div id="search-container">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="search-input" placeholder="Search universe..." />
-    </div>
-
-    <!-- 极简飞行猫 -->
-    <div id="helicopter-cat">
-        <div class="cat-body-container">
-            <div id="zzz-bubble">Zzz...</div>
-            <div class="propeller"></div>
-            <div class="cat-ear left"></div>
-            <div class="cat-ear right"></div>
-            <div class="cat-body">
-                <div class="cat-face">
-                    <div class="eye left"></div>
-                    <div class="eye right"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 阅读器 -->
-    <div id="article-modal">
-        <div class="close-btn" onclick="closeArticle()">&times;</div>
-        <div class="article-content markdown-body" id="markdown-container"></div>
-    </div>
-
+    <div id="helicopter-cat"><div class="cat-body-container"><div id="zzz-bubble">Zzz...</div><div class="propeller"></div><div class="cat-ear left"></div><div class="cat-ear right"></div><div class="cat-body"><div class="cat-face"><div class="eye left"></div><div class="eye right"></div></div></div></div></div>
+    <div class="search-wrapper"><div id="search-container"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search universe..." autocomplete="off"/></div><div id="search-results"></div></div>
+    <div id="article-modal"><div class="close-btn" onclick="closeArticle()">&times;</div><div class="article-content markdown-body" id="markdown-container"></div></div>
+    
     <script>
-        // --- 1. 高级视觉生成器 ---
-        /* 生成极细十字星芒 + 核心光晕 */
-        function createGlowSprite(color, size, neighborsCount) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256; 
-            canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            const c = 128;
+        let Graph, maxDegree = 1;
+        let highlightNodes = new Set(), highlightLinks = new Set();
+        let hoverNode = null, initialCameraPos = null, starryParticles = null;
 
-            // A. 基础圆形光晕
-            const grad = ctx.createRadialGradient(c, c, 0, c, c, 100);
-            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            grad.addColorStop(0.1, color);
-            grad.addColorStop(0.6, color.replace('rgb', 'rgba').replace(')', ', 0.1)'));
-            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(c, c, 100, 0, Math.PI * 2);
-            ctx.fill();
-
-            // B. 极细十字星芒 (Super Fine Rays)
-            ctx.globalCompositeOperation = 'lighter';
-            
-            function drawRay(w, h, alpha) {
-                const rGrad = ctx.createLinearGradient(0, c - h, 0, c + h);
-                rGrad.addColorStop(0, 'rgba(0,0,0,0)');
-                rGrad.addColorStop(0.5, `rgba(255,255,255,${alpha})`);
-                rGrad.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.fillStyle = rGrad;
-                ctx.fillRect(c - w/2, c - h, w, h * 2);
-            }
-
-            // 核心节点星芒更长
-            const scale = 1 + (neighborsCount || 0) * 0.3;
-            // 细到 1px (256canvas上的 1px 渲染出来非常锐利)
-            drawRay(1, 110 * scale, 0.9); 
-            
-            ctx.save();
-            ctx.translate(c, c);
-            ctx.rotate(Math.PI / 2); // 90度
-            ctx.translate(-c, -c);
-            drawRay(1, 80 * scale, 0.9);
-            ctx.restore();
-            
-            const tex = new THREE.CanvasTexture(canvas);
-            const mat = new THREE.SpriteMaterial({ 
-                map: tex, 
-                transparent: true, 
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
-            });
-            const sprite = new THREE.Sprite(mat);
-            sprite.scale.set(size, size, 1);
-            
-            // 存储动画参数
-            sprite.userData = {
-                phase: Math.random() * Math.PI * 2,
-                baseSize: size,
-                speed: 0.5 + Math.random() // 闪烁速度
-            };
-            return sprite;
-        }
-
-        // --- 2. 核心图表逻辑 ---
-        let highlightNodes = new Set();
-        let highlightLinks = new Set();
-        let hoverNode = null;
-        let initialCameraPos = null;
-
-        const Graph = ForceGraph3D()
-            (document.getElementById('3d-graph'))
-            .jsonUrl('./posts_data.json')
-            .backgroundColor('#000000')
-            .nodeLabel('label')
-            
-            // 连线样式：高亮时变亮变粗
-            .linkWidth(link => highlightLinks.has(link) ? 1.5 : 0.5)
-            .linkColor(link => highlightLinks.has(link) ? 'rgba(255,255,255,0.8)' : 'rgba(100, 200, 255, 0.15)')
-            .linkDirectionalParticles(link => highlightLinks.has(link) ? 3 : 0) // 只有 hover 时显示流动粒子
-            .linkDirectionalParticleWidth(2)
-            
-            .nodeThreeObject(node => {
-                // 计算 PageRank 效应 (neighbors 在后续加载，这里可能需要防御性编程)
-                // ForceGraph3D加载完 json 后会自动计算 neighbors，所以这里还没拿到？
-                // 实际上 nodeThreeObject 是在数据加载后调用的，但 neighbors 属性是 d3-force 为了仿真添加的
-                // 稳妥起见，我们假设 node.neighbors 存在（如果我们自己预处理了）或者默认为0
-                
-                const degree = (node.neighbors && node.neighbors.length) || 0;
-                
-                let color = '#00aaff'; // 默认蓝
-                if(node.group === 'diary') color = '#ff66aa';
-                if(node.group === 'tech') color = '#44ff88';
-                if(node.group === 'ai') color = '#ff4444';
-                if(node.id === 'README') color = '#ffcc00';
-
-                // 核心星球显著变大
-                let size = 15 + degree * 5; 
-                if(size > 60) size = 60; // 封顶
-
-                return createGlowSprite(color, size, degree);
-            })
-            .onNodeHover(node => {
-                if(document.getElementById('article-modal').classList.contains('active')) return;
-
-                hoverNode = node || null;
-                document.body.style.cursor = node ? 'pointer' : null;
-                
-                highlightNodes.clear();
-                highlightLinks.clear();
-                
-                if (node) {
-                    highlightNodes.add(node);
-                    // 遍历连线找邻居 (这个操作在大图里可能慢，几百个点没问题)
-                    // 更快的是直接访问 node.neighbors
-                    if(node.neighbors) {
-                       node.neighbors.forEach(neighbor => highlightNodes.add(neighbor));
-                    }
-                    // 标记连线
-                    Graph.graphData().links.forEach(link => {
-                        if (link.source.id === node.id || link.target.id === node.id) {
-                            highlightLinks.add(link);
-                        }
-                    });
-                }
-                
-                updateHighlight();
-            })
-            .onNodeClick(node => {
-                // 记录位置
-                const cam = Graph.camera();
-                initialCameraPos = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
-
-                // 运镜
-                const dist = 60;
-                const ratio = 1 + dist/Math.hypot(node.x, node.y, node.z);
-                Graph.cameraPosition(
-                    { x: node.x * ratio, y: node.y * ratio, z: node.z * ratio }, 
-                    node, 
-                    1500
-                );
-
-                setTimeout(() => openArticle(node), 1000);
-            });
-
-        // --- 3. 数据预处理 & 启动 ---
-        // 我们需要自己手动 fetch 一次来构建 neighbors，或者等待 ForceGraph 内部构建
-        // 最稳妥是劫持 jsonUrl 的加载
-        fetch('./posts_data.json').then(r => r.json()).then(data => {
-            // 构建邻居表
-            const map = {};
-            data.nodes.forEach(n => { n.neighbors = []; map[n.id] = n; });
-            data.links.forEach(l => {
-                const a = map[l.source];
-                const b = map[l.target];
-                if(a && b) {
-                    a.neighbors.push(b);
-                    b.neighbors.push(a);
-                }
-            });
-            
-            Graph.graphData(data);
-            
-            // 启动闪烁动画
-            animateStars();
-        });
-
-
-        // --- 4. 视觉更新逻辑 ---
-        function updateHighlight() {
-            const { nodes } = Graph.graphData();
-            const isHovering = (hoverNode !== null);
-
-            nodes.forEach(node => {
-                const sprite = node.__threeObj;
-                if (!sprite) return;
-
-                if (!isHovering) {
-                    // 全局恢复
-                    sprite.material.opacity = 1;
-                } else if (highlightNodes.has(node)) {
-                    // 高亮
-                    sprite.material.opacity = 1;
-                } else {
-                    // 消隐 (Dim)
-                    sprite.material.opacity = 0.1;
-                }
-            });
-
-            // 触发连线更新
-            Graph.linkWidth(Graph.linkWidth()).linkColor(Graph.linkColor());
-        }
-
-        function animateStars() {
-            const { nodes } = Graph.graphData();
-            if (nodes) {
-                const t = Date.now() * 0.002; // 慢速呼吸
-                nodes.forEach(node => {
-                    const s = node.__threeObj;
-                    // 只有在非消隐状态下才闪烁
-                    if(s && s.material.opacity > 0.5) {
-                        const wave = 1 + Math.sin(t * s.userData.speed + s.userData.phase) * 0.15;
-                        s.scale.set(s.userData.baseSize * wave, s.userData.baseSize * wave, 1);
-                    }
-                });
-            }
-            requestAnimationFrame(animateStars);
-        }
-
-        // --- 5. 背景星空粒子 ---
-        const scene = Graph.scene();
-        function addStarField() {
-            const geo = new THREE.BufferGeometry();
-            const count = 4000;
-            const pos = new Float32Array(count * 3);
-            const cols = new Float32Array(count * 3);
-            for(let i=0; i<count; i++) {
-                const r = 3000 * Math.random(); // 均匀分布在球体内
-                const theta = 2 * Math.PI * Math.random();
-                const phi = Math.acos(2 * Math.random() - 1);
-                pos[i*3] = r * Math.sin(phi) * Math.cos(theta);
-                pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-                pos[i*3+2] = r * Math.cos(phi);
-                
-                const c = new THREE.Color();
-                c.setHSL(Math.random(), 0.2, 0.8); // 略带颜色的白
-                cols[i*3] = c.r; cols[i*3+1] = c.g; cols[i*3+2] = c.b;
-            }
-            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
-            const mat = new THREE.PointsMaterial({ size: 1.5, vertexColors: true, transparent: true, opacity: 0.6 });
-            scene.add(new THREE.Points(geo, mat));
-        }
-        setTimeout(addStarField, 1000);
-
-
-        // --- 6. 搜索 ---
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            const val = e.target.value.toLowerCase();
-            if(!val) return;
-            const { nodes } = Graph.graphData();
-            const hit = nodes.find(n => (n.label||'').toLowerCase().includes(val));
-            if(hit) {
-                // Focus camera
-                const dist = 80;
-                const ratio = 1 + dist/Math.hypot(hit.x, hit.y, hit.z);
-                Graph.cameraPosition({x:hit.x*ratio, y:hit.y*ratio, z:hit.z*ratio}, hit, 1000);
-            }
-        });
-
-
-        // --- 7. 文章界面 ---
         const modal = document.getElementById('article-modal');
         const box = document.getElementById('markdown-container');
         
+        // 核心交互：打开文章
         function openArticle(node) {
-            if(!node || !node.content) return;
-            box.innerHTML = marked.parse(node.content);
+            if(!node) return;
+            const content = node.content || (node.data && node.data.content) || "# No Content";
+            box.innerHTML = marked.parse(content);
             modal.classList.add('active');
         }
-        
         function closeArticle() {
             modal.classList.remove('active');
-            // 复位相机
-            const p = initialCameraPos || {x:0, y:0, z:500};
-            Graph.cameraPosition(p, {x:0,y:0,z:0}, 2000);
+            if(initialCameraPos && Graph) Graph.cameraPosition(initialCameraPos, {x:0,y:0,z:0}, 1500);
         }
         document.addEventListener('keydown', e => { if(e.key==='Escape') closeArticle(); });
 
-
-        // --- 8. 猫猫物理 ---
-        const cat = document.getElementById('helicopter-cat');
-        const catBody = cat.querySelector('.cat-body-container');
-        const leftEye = cat.querySelector('.eye.left');
-        const rightEye = cat.querySelector('.eye.right');
-        const zzz = document.getElementById('zzz-bubble');
-        
-        let mx = window.innerWidth/2, my = window.innerHeight/2;
-        let cx = mx, cy = my, rot = 0;
-        let sleeping = false, lastTv = Date.now();
-
-        document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; lastTv=Date.now(); if(sleeping) wake(); });
-
-        function blink() {
-            if(sleeping) return;
-            leftEye.classList.add('closed'); rightEye.classList.add('closed');
-            setTimeout(() => { if(!sleeping) { leftEye.classList.remove('closed'); rightEye.classList.remove('closed'); } }, 200);
-            setTimeout(blink, 2000 + Math.random() * 3000);
+        // 色温算法
+        function getStarColor(degree) {
+            const t = Math.pow(degree / maxDegree, 0.7); 
+            const c1 = new THREE.Color(0xff4433), c2 = new THREE.Color(0xffddaa), c3 = new THREE.Color(0x66ccff);
+            if (t < 0.4) return c1.clone().lerp(c2, t * 2.5).getStyle();
+            else return c2.clone().lerp(c3, (t - 0.4) * 1.6).getStyle();
         }
-        setTimeout(blink, 2000);
 
-        function sleep() { sleeping=true; leftEye.classList.add('closed'); rightEye.classList.add('closed'); zzz.classList.add('active'); }
-        function wake() { sleeping=false; leftEye.classList.remove('closed'); rightEye.classList.remove('closed'); zzz.classList.remove('active'); blink(); }
-
-        function loop() {
-            if(!sleeping && Date.now()-lastTv > 5000) sleep();
+        // 视觉生成器
+        function createGlowSprite(color, size, degree) {
+            const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128; 
+            const ctx = canvas.getContext('2d'); const c = 64;
+            const grad = ctx.createRadialGradient(c, c, 3, c, c, 20);
+            grad.addColorStop(0, 'rgba(255,255,255,1)'); grad.addColorStop(0.4, color); grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(c, c, 20, 0, Math.PI*2); ctx.fill();
             
-            const ease = 0.08;
-            let tx = mx + 20, ty = my + 20;
-            let nx = cx + (tx-cx)*ease, ny = cy + (ty-cy)*ease;
-            let vx = nx - cx;
+            ctx.globalCompositeOperation = 'lighter';
+            const rayScale = 0.5 + (degree / maxDegree);
+            const drawRay = (w, h, a) => {
+                const g = ctx.createLinearGradient(0, c-h, 0, c+h);
+                g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(0.5,`rgba(255,255,255,${a})`); g.addColorStop(1,'rgba(0,0,0,0)');
+                ctx.fillStyle = g; ctx.fillRect(c-w/2, c-h, w, h*2);
+            };
+            drawRay(0.6, 40*rayScale, 0.9);
+            ctx.save(); ctx.translate(c, c); ctx.rotate(Math.PI/2); ctx.translate(-c, -c); drawRay(0.6, 30*rayScale, 0.9); ctx.restore();
             
-            let tr = vx * -2;
-            tr = Math.max(-20, Math.min(20, tr));
-            rot += (tr - rot)*0.1;
-            
-            cx = nx; cy = ny;
-            cat.style.left = cx+'px'; cat.style.top = cy+'px';
-            catBody.style.transform = `rotate(${rot}deg)`;
-            
-            if(!sleeping) {
-                let off = Math.max(-2, Math.min(2, vx*0.5));
-                leftEye.style.transform = `translateX(${off}px)`;
-                rightEye.style.transform = `translateX(${off}px)`;
-            }
-            requestAnimationFrame(loop);
+            const mat = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+            const sprite = new THREE.Sprite(mat);
+            const finalSize = size * (1 + (degree/maxDegree)*0.5);
+            sprite.scale.set(finalSize, finalSize, 1);
+            sprite.userData = { phase: Math.random()*Math.PI*2, baseScale: finalSize, currentOpacity: 1.0, speed: 0.5+Math.random() };
+            return sprite;
         }
-        loop();
-        
-        window.onresize = () => Graph.width(window.innerWidth).height(window.innerHeight);
 
+        // 初始化图表
+        Graph = ForceGraph3D()(document.getElementById('3d-graph'))
+            .jsonUrl('./posts_data.json')
+            .backgroundColor('#000000')
+            .nodeLabel(null)
+            .linkThreeObject(link => {
+                const geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+                geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array([0.5,0.5,0.5, 0.5,0.5,0.5]), 3));
+                const mat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.15 });
+                const line = new THREE.Line(geo, mat); link.__lineObj = line; return line;
+            })
+            .linkPositionUpdate((line, { start, end }) => {
+                const p = line.geometry.attributes.position.array;
+                p[0]=start.x; p[1]=start.y; p[2]=start.z; p[3]=end.x; p[4]=end.y; p[5]=end.z;
+                line.geometry.attributes.position.needsUpdate = true; return true; 
+            })
+            .nodeThreeObject(node => {
+                const degree = (node.neighbors && node.neighbors.length) || 0;
+                let color = getStarColor(degree); node.color = color; 
+                const group = new THREE.Group();
+                const sprite = createGlowSprite(color, 12, degree); group.add(sprite); group.sprite = sprite;
+                const text = new SpriteText(node.label); text.color = '#fff'; text.textHeight = 4; text.position.y = -16;
+                text.material.transparent = true; text.material.opacity = 0; text.material.depthWrite = false;
+                group.add(text); group.text = text; return group;
+            })
+            .onNodeHover(node => {
+                if(modal.classList.contains('active')) return;
+                hoverNode = node || null; document.body.style.cursor = node ? 'pointer' : null;
+                highlightNodes.clear(); highlightLinks.clear();
+                if (node) {
+                    highlightNodes.add(node);
+                    if(node.neighbors) node.neighbors.forEach(n => highlightNodes.add(n));
+                    Graph.graphData().links.forEach(l => { if (l.source.id === node.id || l.target.id === node.id) highlightLinks.add(l); });
+                }
+            })
+            .onNodeClick(node => {
+                if(!node) return;
+                const cam = Graph.camera(); initialCameraPos = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
+                const ratio = 1 + 60/Math.hypot(node.x, node.y, node.z);
+                Graph.cameraPosition({ x: node.x*ratio, y: node.y*ratio, z: node.z*ratio }, node, 1000);
+                setTimeout(() => openArticle(node), 1000);
+            });
+
+        // 占位符继续写入...
+        // SCRIPT_PART_2_PLACEHOLDER
     </script>
 </body>
 </html>
