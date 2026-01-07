@@ -38,14 +38,21 @@ def build_data():
     if not os.path.exists(POSTS_DIR):
         os.makedirs(POSTS_DIR)
         
-    files = [f for f in os.listdir(POSTS_DIR) if f.endswith('.md')]
+    # 修改为递归扫描所有子文件夹中的 .md 文件
+    files_full_paths = []
+    for root, dirs, files in os.walk(POSTS_DIR):
+        for f in files:
+            if f.endswith('.md'):
+                files_full_paths.append(os.path.join(root, f))
+    
     nodes = []
     links = []
     id_map = {}
 
-    for filename in files:
+    for filepath in files_full_paths:
         try:
-            with open(os.path.join(POSTS_DIR, filename), 'r', encoding='utf-8') as f:
+            filename = os.path.basename(filepath)
+            with open(filepath, 'r', encoding='utf-8') as f:
                 meta, content = parse_front_matter(f.read())
             
             file_id = os.path.splitext(filename)[0]

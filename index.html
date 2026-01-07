@@ -563,7 +563,7 @@
                 
                 // 1. Distance Check
                 const dist = camPos.distanceTo(nodePos);
-                const isDistOk = Math.abs(dist - 180) < 40; // Allow slight tolerance around 120 (80-160)
+                const isDistOk = Math.abs(dist - 300) < 40; // Allow slight tolerance around 300 (280-340)
                 
                 // 2. Centered Check (Angle)
                 const viewDir = new THREE.Vector3();
@@ -942,7 +942,7 @@
             let dir = new THREE.Vector3().subVectors(camPos, nodePos).normalize();
             if (dir.lengthSq() < 0.001) dir.set(0, 0, 1);
             
-            const dist = 180;
+            const dist = 300;
             const targetPos = nodePos.clone().add(dir.multiplyScalar(dist));
             
             // Start custom flight
