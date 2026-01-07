@@ -212,6 +212,7 @@
         let Graph, maxDegree = 1;
         let highlightNodes = new Set(), highlightLinks = new Set();
         let hoverNode = null, initialCameraPos = null, starryParticles = null;
+        let selectedNode = null;
         let globalStartPos = null; // 宇宙初始最佳视角
 
         // 惯性缩放系统变量
@@ -238,7 +239,7 @@
         function closeArticle() {
             modal.classList.remove('active');
             setTimeout(() => { modal.style.display = 'none'; }, 400);
-            if(initialCameraPos && Graph) Graph.cameraPosition(initialCameraPos, {x:0,y:0,z:0}, 1500);
+            // Camera position reset removed to keep focus on the star
             
             // 唤醒猫猫
             const cat = document.getElementById('helicopter-cat');
@@ -418,10 +419,31 @@
             })
             .onNodeClick(node => {
                 if(!node) return;
-                const cam = Graph.camera(); initialCameraPos = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
-                const ratio = 1 + 60/Math.hypot(node.x, node.y, node.z);
-                Graph.cameraPosition({ x: node.x*ratio, y: node.y*ratio, z: node.z*ratio }, node, 1000);
-                setTimeout(() => openArticle(node), 1000);
+                
+                // 计算当前相机到目标节点的真实距离
+                const camPos = Graph.camera().position;
+                const dist = Math.hypot(camPos.x - node.x, camPos.y - node.y, camPos.z - node.z);
+                
+                // 距离阈值：例如 flyTo 停在 60 处，我们在 80 以内认为已到达
+                const ARRIVAL_THRESHOLD = 80;
+
+                // 若已是选中状态 且 距离足够近 -> 打开文章
+                if (selectedNode && selectedNode.id === node.id && dist < ARRIVAL_THRESHOLD) {
+                    openArticle(node);
+                } else {
+                    // 否则 -> 飞过去
+                    selectedNode = node;
+                    flyTo(node, 1200);
+                }
+            })
+            .onBackgroundClick(() => {
+                selectedNode = null;
+                // Close search if active
+                const sr = document.getElementById('search-results');
+                if (sr.classList.contains('active')) {
+                    sr.classList.remove('active');
+                    document.getElementById('search-input').blur();
+                }
             });
 
         // 数据处理
@@ -657,21 +679,58 @@
         // 搜索系统
         const searchInput = document.getElementById('search-input');
         const searchResults = document.getElementById('search-results');
+
+        // Global click to close search from anywhere
+        document.addEventListener('click', (e) => {
+            const wrapper = document.querySelector('.search-wrapper');
+            if (searchResults.classList.contains('active') && !wrapper.contains(e.target)) {
+                searchResults.classList.remove('active');
+                searchInput.blur();
+            }
+        });
+
         let searchIndex = -1;
+
+        // 飞行控制核心函数
+        function flyTo(node, duration = 1500) {
+            // 计算更平滑的飞行目标：保持当前视角方向，只拉近距离
+            const cam = Graph.camera();
+            const nodePos = new THREE.Vector3(node.x, node.y, node.z);
+            const camPos = new THREE.Vector3(cam.position.x, cam.position.y, cam.position.z);
+            
+            // 计算从星球指向相机的向量
+            const dir = new THREE.Vector3().subVectors(camPos, nodePos).normalize();
+            
+            // 如果相机和星球重合(极端情况)，使用默认方向
+            if (dir.lengthSq() < 0.001) dir.set(0, 0, 1);
+            
+            // 目标位置：距离星球表面约 60 单位
+            const dist = 60;
+            const targetPos = nodePos.clone().add(dir.multiplyScalar(dist));
+            
+            // 执行平滑飞行，始终注视星球
+            Graph.cameraPosition(
+                { x: targetPos.x, y: targetPos.y, z: targetPos.z }, // Target Position
+                node, // Look At
+                duration // Duration
+            );
+        }
 
         function jumpToNode(id, openDoc = false) {
             const { nodes } = Graph.graphData();
             const node = nodes.find(n => n.id === id);
             if(node) {
-                const ratio = 1 + 60/Math.hypot(node.x, node.y, node.z);
-                Graph.cameraPosition({ x: node.x*ratio, y: node.y*ratio, z: node.z*ratio }, node, 800);
+                selectedNode = node; 
+                
+                // 执行平滑飞行
+                flyTo(node, 1200);
                 
                 // Highlight
                 hoverNode = node; highlightNodes.clear(); highlightNodes.add(node);
                 if(node.neighbors) node.neighbors.forEach(n => highlightNodes.add(n));
                 
                 if(openDoc) {
-                    setTimeout(() => openArticle(node), 800);
+                    setTimeout(() => openArticle(node), 1200);
                     searchInput.value = ''; searchResults.classList.remove('active');
                 }
             }
