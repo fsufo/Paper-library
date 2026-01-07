@@ -158,14 +158,19 @@
         let allTags = new Set(); // Global Tag Registry
         let selectedTags = new Set(); // Current Tag Filter
         let activeLookup = {}; // 独立的全局查找表，解耦 Node 对象
-        let isSearchHovering = false; // Flag to track search interaction
+        let isNodeDragging = false; // Track node drag state
+
+        // Helper to check if mouse is over search UI
+        function isMouseOverSearch() {
+            return !!document.querySelector('.search-wrapper:hover');
+        }
 
         // 统一的高亮模式设置函数
         function setHighlightMode(node) {
             hoverNode = node || null; 
             // Only set pointer cursor if we are highlighting a specific node (and not just clearing)
             // Note: Real-time cursor update is handled mainly by onNodeHover for the graph
-            if(!isSearchHovering) document.body.style.cursor = node ? 'pointer' : null;
+            if(!isMouseOverSearch()) document.body.style.cursor = node ? 'pointer' : null;
             
             highlightNodes.clear(); highlightLinks.clear();
             
@@ -505,7 +510,7 @@
             })
             .onNodeHover(node => {
                 if(modal.classList.contains('active')) return;
-                if(isSearchHovering) return; // Ignore canvas hover if interacting with search UI
+                if(isMouseOverSearch()) return; // Ignore canvas hover if interacting with search UI
 
                 if (node) {
                     setHighlightMode(node);
@@ -519,6 +524,8 @@
                     }
                 }
             })
+            .onNodeDrag(() => { isNodeDragging = true; })
+            .onNodeDragEnd(() => { isNodeDragging = false; })
             .onNodeClick(node => {
                 if(!node) return;
                 
@@ -977,12 +984,23 @@
         // Prevent graph rotation when hovering search
         const searchWrapper = document.querySelector('.search-wrapper');
         searchWrapper.addEventListener('mouseenter', () => {
-            isSearchHovering = true;
             if(Graph && Graph.controls()) Graph.controls().enabled = false;
         });
         searchWrapper.addEventListener('mouseleave', () => {
-             isSearchHovering = false;
              if(Graph && Graph.controls()) Graph.controls().enabled = true;
+        });
+        // Failsafe: Ensure controls are enabled if mouse is not over search (e.g. after layout change)
+        document.addEventListener('mousemove', (e) => {
+             // Only interfere if we are NOT dragging a node. 
+             // If dragging, let the library manage controls (it disables them).
+             if(Graph && Graph.controls() && !isNodeDragging) {
+                 const isOver = e.target.closest('.search-wrapper');
+                 if(isOver) {
+                     Graph.controls().enabled = false;
+                 } else {
+                     Graph.controls().enabled = true;
+                 }
+             }
         });
 
         // 背景星空 (修复版：确保可见性 + 距离渐隐)
