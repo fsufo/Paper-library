@@ -3,247 +3,527 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paper-library Navigation</title>
+    <title>Galactic Blog</title>
+    <!-- 显式引入 Three.js -->
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <!-- 引入 3D Force Graph -->
+    <script src="https://unpkg.com/3d-force-graph@1.73.1/dist/3d-force-graph.min.js"></script>
+    <!-- 引入 Marked -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-            background-color: #0d1117;
-            color: #c9d1d9;
-            margin: 0;
-            line-height: 1.5;
-            display: flex;
-            justify-content: center;
-            padding-top: 40px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            padding: 0 16px;
-        }
-
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            margin-bottom: 32px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid #30363d;
-        }
-
-        .avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 1px solid #30363d;
-            background-color: #161b22;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            color: #8b949e;
-        }
-
-        .profile-info h1 {
-            color: #c9d1d9;
-            font-size: 26px;
-            margin: 0;
-            font-weight: 600;
-        }
-
-        .profile-info .bio {
-            color: #8b949e;
-            font-size: 16px;
-            margin-top: 8px;
-        }
-
-        .repo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 16px;
-        }
-
-        @media (max-width: 768px) {
-            .repo-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .repo-card {
-            background-color: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            transition: border-color 0.2s;
-        }
-
-        .repo-card:hover {
-            border-color: #8b949e;
-        }
-
-        .repo-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .repo-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .repo-title a {
-            color: #58a6ff;
-            text-decoration: none;
-        }
-
-        .repo-title a:hover {
-            text-decoration: underline;
-        }
-
-        .repo-label {
-            border: 1px solid #30363d;
-            border-radius: 2em;
-            padding: 0 10px;
-            font-size: 12px;
-            color: #8b949e;
-            line-height: 22px;
-            display: inline-block;
-        }
-
-        .repo-desc {
-            color: #8b949e;
-            font-size: 14px;
-            margin: 0 0 16px 0;
-            flex-grow: 1;
-        }
-
-        .file-list {
-            margin-top: 12px;
-            border-top: 1px solid #21262d;
-            padding-top: 12px;
-            font-size: 13px;
-        }
-
-        .file-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .file-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .file-icon {
-            margin-right: 8px;
-            color: #8b949e;
-        }
-
-        .file-link {
-            color: #c9d1d9;
-            text-decoration: none;
-        }
-
-        .file-link:hover {
-            color: #58a6ff;
-            text-decoration: underline;
-        }
-
-        .footer {
-            margin-top: 48px;
-            padding-top: 24px;
-            border-top: 1px solid #30363d;
-            text-align: center;
-            color: #8b949e;
-            font-size: 12px;
-            margin-bottom: 40px;
+        body { 
+            margin: 0; padding: 0; overflow: hidden; 
+            background-color: #000000; 
+            color: #fff; 
+            font-family: 'Segoe UI', sans-serif;
+            /* 圆润 Q 弹胖箭头 */
+            cursor: url('data:image/svg+xml;utf8,<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 3.5L11 20L14 12.5L21.5 9L5.5 3.5Z" fill="white" stroke="%23222" stroke-width="2.5" stroke-linejoin="round"/></svg>') 5 3, auto;
         }
         
+        #3d-graph { width: 100vw; height: 100vh; position: absolute; z-index: 1; }
+
+        /* 极简飞行猫 */
+        #helicopter-cat {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            width: 32px;  /* 缩小一点 */
+            height: 24px;
+            top: -100px; left: -100px;
+            will-change: transform, top, left;
+        }
+
+        /* 身体容器 */
+        .cat-body-container {
+            width: 100%; height: 100%;
+            position: relative;
+            animation: float 2.5s ease-in-out infinite;
+        }
+
+        /* 身体主体 */
+        .cat-body {
+            width: 32px; height: 22px;
+            background: #fff;
+            border-radius: 16px 16px 12px 12px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6); /* 增加发光感 */
+            position: absolute; bottom: 0;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* 耳朵 */
+        .cat-ear {
+            position: absolute; top: -4px;
+            width: 0; height: 0;
+            border-left: 5px solid transparent; border-right: 5px solid transparent;
+            border-bottom: 10px solid #fff;
+        }
+        .cat-ear.left { left: 3px; transform: rotate(-15deg); }
+        .cat-ear.right { right: 3px; transform: rotate(15deg); }
+
+        /* 眼睛容器 */
+        .cat-face {
+            position: absolute;
+            top: 8px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+        .eye {
+            width: 3px; height: 3px;
+            background: #333;
+            border-radius: 50%;
+            transition: transform 0.1s, height 0.1s;
+        }
+        /* 闭眼样式 (添加 class 'closed') */
+        .eye.closed {
+            height: 1px;
+            transform: scaleX(1.5);
+            background: #555;
+        }
+
+        /* 螺旋桨 */
+        .propeller {
+            position: absolute; top: -10px; left: 50%;
+            width: 28px; height: 2px;
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateX(-50%);
+            border-radius: 2px;
+            animation: spin 0.08s linear infinite;
+        }
+        .propeller::after {
+            content: ''; position: absolute;
+            top: 100%; left: 50%; width: 2px; height: 6px;
+            background: #ccc; transform: translateX(-50%);
+        }
+
+        /* Zzz 睡觉气泡 */
+        #zzz-bubble {
+            position: absolute;
+            top: -20px; right: -15px;
+            font-size: 10px; color: #fff;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        #zzz-bubble.active { opacity: 0.8; animation: floatUp 2s infinite; }
+        
+        @keyframes floatUp { 0% { transform: translateY(0); opacity: 0.8; } 100% { transform: translateY(-10px); opacity: 0; } }
+        @keyframes spin { 0% { transform: translateX(-50%) rotateY(0deg); } 100% { transform: translateX(-50%) rotateY(360deg); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+
+        /* 文章阅读器 */
+        #article-modal {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 5, 10, 0.85); /* 更黑更透明 */
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            opacity: 0; transition: opacity 0.3s;
+            overflow-y: auto;
+        }
+        #article-modal.active { display: block; opacity: 1; }
+        
+        .article-content {
+            max-width: 800px; margin: 80px auto; padding: 40px;
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid rgba(48, 54, 61, 0.8);
+            border-radius: 12px;
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.8);
+        }
+        .close-btn { position: fixed; top: 30px; right: 50px; font-size: 32px; cursor: pointer; color: #aaa; z-index: 1100; }
+        .close-btn:hover { color: #fff; transform: scale(1.1); }
+
+        .markdown-body { line-height: 1.7; color: #e6edf3; }
+        .markdown-body h1, h2 { border-bottom: 1px solid #30363d; padding-bottom: 0.3em; color: #fff; }
+        .markdown-body a { color: #2f81f7; }
+        .markdown-body code { background: rgba(110, 118, 129, 0.4); padding: 0.2em 0.4em; border-radius: 6px; }
+        .markdown-body pre { background: #0d1117; padding: 16px; border-radius: 6px; overflow: auto; }
+
+        .tip {
+            position: fixed; top: 20px; left: 20px; z-index: 10;
+            color: rgba(255,255,255,0.4); font-size: 12px; pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="profile-header">
-        <div class="avatar">PL</div>
-        <div class="profile-info">
-            <h1>Paper-library</h1>
-            <div class="bio">一些时尚小垃圾整理</div>
+    <div id="3d-graph"></div>
+
+    <div class="tip">SPACE EXPLORER v2.0</div>
+
+    <!-- 极简飞行猫 -->
+    <div id="helicopter-cat">
+        <div class="cat-body-container">
+            <div id="zzz-bubble">Zzz...</div>
+            <div class="propeller"></div>
+            <div class="cat-ear left"></div>
+            <div class="cat-ear right"></div>
+            <div class="cat-body">
+                <div class="cat-face">
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <h3>Pinned Resources</h3>
-    <div class="repo-grid">
+    <!-- 阅读器 -->
+    <div id="article-modal">
+        <div class="close-btn" onclick="closeArticle()">&times;</div>
+        <div class="article-content markdown-body" id="markdown-container"></div>
+    </div>
+
+    <script>
+        // --- 1. 十字星芒发光材质 ---
+        /* 
+           这个函数绘制一个带有强光核心和十字星芒的纹理 
+           看起来更像高质量的太空摄影
+        */
+        function createGlowSprite(color, size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128; // 分辨率
+            canvas.height = 128;
+            const context = canvas.getContext('2d');
+            const center = 64;
+
+            // 1. 核心光晕 (柔和的圆形)
+            const gradient = context.createRadialGradient(
+                center, center, 0,
+                center, center, 60
+            );
+            // 颜色解析：我们需要把传入的 rgb(r,g,b) 解析出来以便调整 alpha
+            // 简单处理：直接假设 color 格式正确，或者让中间白，边缘是 color
+            
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)'); // 核心极亮
+            gradient.addColorStop(0.15, color); // 核心周围
+            gradient.addColorStop(0.4, color.replace(')', ', 0.2)').replace('rgb', 'rgba'));
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            
+            context.fillStyle = gradient;
+            context.beginPath();
+            context.arc(center, center, 60, 0, Math.PI * 2);
+            context.fill();
+
+            // 2. 十字星芒 (Cross Flare)
+            // 画两条细长的亮线
+            context.globalCompositeOperation = 'lighter'; // 叠加模式
+            
+            function drawRay(width, length, alpha) {
+                const rayGrad = context.createLinearGradient(0, center - length, 0, center + length);
+                rayGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                rayGrad.addColorStop(0.5, `rgba(255,255,255,${alpha})`);
+                rayGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                
+                context.fillStyle = rayGrad;
+                context.fillRect(center - width/2, center - length, width, length * 2);
+            }
+
+            // 竖线
+            drawRay(2, 50, 0.8);
+            // 横线 (旋转画布绘制)
+            context.save();
+            context.translate(center, center);
+            context.rotate(Math.PI / 2);
+            context.translate(-center, -center);
+            drawRay(2, 40, 0.8); //稍微短一点
+            context.restore();
+            
+            // 3. 转成纹理
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ 
+                map: texture, 
+                transparent: true, 
+                blending: THREE.AdditiveBlending, // 关键：加法混合让光叠加
+                depthWrite: false // 不遮挡背后的星星
+            });
+            
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(size, size, 1);
+            
+            // 挂载一个随机的相位，用于后续闪烁动画
+            sprite.userData = {
+                phase: Math.random() * Math.PI * 2,
+                baseSize: size,
+                speed: 0.5 + Math.random() * 1.5 // 闪烁速度不同
+            };
+            
+            return sprite;
+        }
+
+        // --- 2. 3D Force Graph 配置 ---
+        // 记录全局 Graph 对象以便后续访问 scene 和 camera
+        const Graph = ForceGraph3D()
+            (document.getElementById('3d-graph'))
+            .jsonUrl('./posts_data.json')
+            .backgroundColor('#000000') 
+            .nodeLabel('label')
+            .nodeThreeObject(node => {
+                // 根据 group 决定颜色
+                let color = node.group === 'diary' ? 'rgb(255, 100, 200)' : 'rgb(0, 200, 255)';
+                if(node.group === 'tech') color = 'rgb(100, 255, 150)';
+                if(node.group === 'ai') color = 'rgb(255, 50, 50)';
+                if(node.id === 'README') color = 'rgb(255, 220, 100)';
+
+                // 星星大小
+                let size = 12 + Math.random() * 8;
+                return createGlowSprite(color, size);
+            })
+            .linkWidth(0.6)
+            .linkColor(() => 'rgba(100, 150, 255, 0.15)') // 蓝紫色连线
+            .onNodeClick(node => {
+                // 1. 记录当前相机位置（用于关闭时复位）
+                saveCameraState();
+                
+                // 2. 镜头推进
+                const distance = 50;
+                const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
+
+                Graph.cameraPosition(
+                    { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }, 
+                    node, // lookAt
+                    2000  // duration
+                );
+
+                // 3. 延迟打开文章
+                setTimeout(() => {
+                    openArticle(node);
+                }, 1200); 
+            });
+
+        // --- 3. 闪烁动画循环 ---
+        // ForceGraph3D 底层使用了 d3-force，我们需要挂载到它的 tick 里，
+        // 或者简单点，利用 Three 的 onBeforeRender 或者 d3 的 tick
+        // 但最简单的还是自己起一个 requestAnimationFrame 来修改 scene 里的对象
         
-        <!-- 博客部分 -->
-        <div class="repo-card">
-            <div class="repo-header">
-                <h4 class="repo-title">
-                    <a href="博客/TODO日程看板网页.html">博客 / 工具</a>
-                </h4>
-                <span class="repo-label">Web</span>
-            </div>
-            <p class="repo-desc">包含个人日历和待办事项的可视化看板网页。</p>
-            <div class="file-list">
-                <div class="file-item">
-                    <span class="file-icon">📄</span>
-                    <a href="博客/TODO日程看板网页.html" class="file-link">TODO日程看板网页.html</a>
-                </div>
-            </div>
-        </div>
+        function animateStars() {
+            // 获取图表中的所有节点对象
+            const scene = Graph.scene();
+            // 这种遍历略耗性能，但对于几百个节点没事
+            // 更好的方式是直接通过 Graph.graphData().nodes 拿到 node.__threeObj
+            
+            const { nodes } = Graph.graphData();
+            if (nodes) {
+                const time = Date.now() * 0.003; // 全局时间
+                nodes.forEach(node => {
+                    const sprite = node.__threeObj;
+                    if (sprite && sprite.userData.baseSize) {
+                        // 呼吸算法: size * (0.8 ~ 1.2)
+                        const scale = 1 + Math.sin(time * sprite.userData.speed + sprite.userData.phase) * 0.2;
+                        sprite.scale.set(
+                            sprite.userData.baseSize * scale, 
+                            sprite.userData.baseSize * scale, 
+                            1
+                        );
+                    }
+                });
+            }
+            requestAnimationFrame(animateStars);
+        }
+        // 启动闪烁 (延迟一点等数据加载)
+        setTimeout(animateStars, 2000);
 
-        <!-- 心灵终结INI部分 -->
-        <div class="repo-card">
-            <div class="repo-header">
-                <h4 class="repo-title">
-                    <a href="心灵终结ini/">心灵终结 ini</a>
-                </h4>
-                <span class="repo-label">Config</span>
-            </div>
-            <p class="repo-desc">
-                RA2 心灵终结模组的修改配置。<br>
-                包含：无源超武、特殊部队空降、隐身白杨导弹等。
-            </p>
-            <div class="file-list">
-                <div class="file-item">
-                    <span class="file-icon">⚙️</span>
-                    <a href="心灵终结ini/FS_artmo.ini" class="file-link">FS_artmo.ini</a>
-                </div>
-                <div class="file-item">
-                    <span class="file-icon">⚙️</span>
-                    <a href="心灵终结ini/FS_rulesmo.ini" class="file-link">FS_rulesmo.ini</a>
-                </div>
-            </div>
-        </div>
 
-        <!-- 项目说明 -->
-        <div class="repo-card">
-            <div class="repo-header">
-                <h4 class="repo-title">
-                    <a href="README.md">Project Info</a>
-                </h4>
-                <span class="repo-label">Doc</span>
-            </div>
-            <p class="repo-desc">查看本库的详细说明文档。</p>
-            <div class="file-list">
-                <div class="file-item">
-                    <span class="file-icon">📖</span>
-                    <a href="README.md" class="file-link">README.md</a>
-                </div>
-            </div>
-        </div>
+        // --- 4. 相机复位逻辑 ---
+        let initialCameraPos = null;
+        
+        function saveCameraState() {
+            // 获取当前相机位置
+            const cam = Graph.camera();
+            initialCameraPos = {
+                x: cam.position.x,
+                y: cam.position.y,
+                z: cam.position.z 
+            };
+            // 稍微把距离拉远一点点作为复位点，防止太近
+            // 或者直接用固定的远景位置，例如 {x:0, y:0, z:400}
+        }
 
-    </div>
+        // --- 3. 添加星空背景粒子 ---
+        // 既然我们有 THREE 实例，我们可以手动向 scene 添加物体
+        const scene = Graph.scene();
+        
+        function addStarField() {
+            const geometry = new THREE.BufferGeometry();
+            const count = 3000;
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
 
-    <div class="footer">
-        &copy; 2026 Paper-library Owner. Generated for GitHub Pages.
-    </div>
-</div>
+            for(let i = 0; i < count; i++) {
+                const r = 2500; // 扩大一点宇宙
+                const theta = 2 * Math.PI * Math.random();
+                const phi = Math.acos(2 * Math.random() - 1);
+                
+                const x = r * Math.sin(phi) * Math.cos(theta);
+                const y = r * Math.sin(phi) * Math.sin(theta);
+                const z = r * Math.cos(phi);
 
+                positions[i*3] = x;
+                positions[i*3+1] = y;
+                positions[i*3+2] = z;
+
+                const starType = Math.random();
+                let col = new THREE.Color(0xffffff);
+                if(starType > 0.9) col.setHex(0xaaaaaa);
+                else if(starType > 0.7) col.setHex(0xaaccff); 
+
+                colors[i*3] = col.r;
+                colors[i*3+1] = col.g;
+                colors[i*3+2] = col.b;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 2,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.6
+            });
+
+            const points = new THREE.Points(geometry, material);
+            scene.add(points);
+        }
+        // 延迟一点添加，确保 scene ready
+        setTimeout(addStarField, 1000);
+
+
+        // --- 4. 小猫逻辑 (眨眼+跟随+睡觉) ---
+        const cat = document.getElementById('helicopter-cat');
+        const catBodyContainer = cat.querySelector('.cat-body-container');
+        const leftEye = cat.querySelector('.eye.left');
+        const rightEye = cat.querySelector('.eye.right');
+        const zzz = document.getElementById('zzz-bubble');
+        
+        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+        let catX = mouseX, catY = mouseY;
+        let rotate = 0;
+        let isSleeping = false;
+        let lastMoveTime = Date.now();
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            lastMoveTime = Date.now();
+            if(isSleeping) wakeUp();
+        });
+
+        // 眨眼循环
+        function blinkLoop() {
+            if(isSleeping) return; // 睡觉时不眨眼
+            
+            // 闭眼
+            leftEye.classList.add('closed');
+            rightEye.classList.add('closed');
+            
+            setTimeout(() => {
+                // 睁眼
+                if(!isSleeping) {
+                    leftEye.classList.remove('closed');
+                    rightEye.classList.remove('closed');
+                }
+            }, 200);
+
+            // 随机下次眨眼时间 2-5秒
+            const nextBlink = 2000 + Math.random() * 3000;
+            setTimeout(blinkLoop, nextBlink);
+        }
+        setTimeout(blinkLoop, 2000);
+
+        function sleep() {
+            isSleeping = true;
+            leftEye.classList.add('closed');
+            rightEye.classList.add('closed');
+            zzz.classList.add('active');
+            // 停止螺旋桨? 不，直升机还在飞，只是猫睡着了
+        }
+
+        function wakeUp() {
+            isSleeping = false;
+            leftEye.classList.remove('closed');
+            rightEye.classList.remove('closed');
+            zzz.classList.remove('active');
+            blinkLoop(); // 重启眨眼
+        }
+
+        // 物理帧循环
+        function animateCat() {
+            const now = Date.now();
+            if(!isSleeping && now - lastMoveTime > 5000) {
+                sleep(); // 5秒不动就睡
+            }
+
+            const ease = 0.08;
+            // 右下角偏移: +25, +25
+            let targetX = mouseX + 20; 
+            let targetY = mouseY + 20;
+
+            let nextX = catX + (targetX - catX) * ease;
+            let nextY = catY + (targetY - catY) * ease;
+            
+            let velX = nextX - catX;
+            
+            // 倾斜逻辑
+            let targetRotate = velX * -2;
+            if (targetRotate > 20) targetRotate = 20;
+            if (targetRotate < -20) targetRotate = -20;
+            rotate += (targetRotate - rotate) * 0.1;
+
+            catX = nextX;
+            catY = nextY;
+
+            cat.style.left = `${catX}px`;
+            cat.style.top = `${catY}px`;
+            catBodyContainer.style.transform = `rotate(${rotate}deg)`;
+
+            // 眼睛方向微调 (简单的视差)
+            if(!isSleeping) {
+                let eyeOffsetX = velX * 0.5; 
+                if (eyeOffsetX > 2) eyeOffsetX = 2; 
+                if (eyeOffsetX < -2) eyeOffsetX = -2;
+                leftEye.style.transform = `translateX(${eyeOffsetX}px)`;
+                rightEye.style.transform = `translateX(${eyeOffsetX}px)`;
+            }
+
+            requestAnimationFrame(animateCat);
+        }
+        animateCat();
+
+        // --- 5. 文章控制 ---
+        const modal = document.getElementById('article-modal');
+        const mkContainer = document.getElementById('markdown-container');
+
+        function openArticle(node) {
+            if(!node || !node.content) return;
+            mkContainer.innerHTML = marked.parse(node.content);
+            modal.classList.add('active');
+        }
+
+        function closeArticle() {
+            modal.classList.remove('active');
+            
+            // 核心修复：相机复位
+            // 如果我们有保存的位置就回退，否则退到一个默认远景
+            const targetPos = initialCameraPos || { x: 0, y: 0, z: 500 };
+            
+            // 为了防止相机直接穿模，给它一个 lookAt 原点的指令
+            Graph.cameraPosition(
+                targetPos, // 飞回这一球
+                { x: 0, y: 0, z: 0 }, // 看着宇宙中心
+                2000 // 飞 2 秒
+            );
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeArticle();
+        });
+
+        // 窗口 Resize 处理
+        window.addEventListener('resize', () => {
+            Graph.width(window.innerWidth).height(window.innerHeight);
+        });
+
+    </script>
 </body>
 </html>

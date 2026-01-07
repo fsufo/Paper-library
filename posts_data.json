@@ -1,0 +1,253 @@
+{
+  "nodes": [
+    {
+      "id": "hello-world",
+      "label": "Hello World",
+      "group": "diary",
+      "content": "# Hello World\n\n这是我的第一篇博客文章。在这个炫酷的系统中，我们可以通过 markdown 编写内容。\n\n也可以引用其他文章，比如 [[About]] 或者 [关于](About.md)。\n\n## 代码测试\n\n```javascript\nconsole.log('Hello Starry Sky');\n```",
+      "val": 1
+    },
+    {
+      "id": "post_1",
+      "label": "Thinking about Space 1",
+      "group": "space",
+      "content": "# Thinking about Space 1\n\n这里是关于 **Space** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Coffee**。\n\n### 关联文章\n- 延伸阅读：[hello-world.md 的详情](hello-world.md)\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_10",
+      "label": "Fixing about React 10",
+      "group": "react",
+      "content": "# Fixing about React 10\n\n这里是关于 **React** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Music**。\n\n### 关联文章\n- 参考资料：[[hello-world]]\n- 参考资料：[[post_5]]\n- 参考资料：[[post_4]]\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_11",
+      "label": "Building about Design 11",
+      "group": "design",
+      "content": "# Building about Design 11\n\n这里是关于 **Design** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Cyberpunk**。\n\n### 关联文章\n- 延伸阅读：[post_3.md 的详情](post_3.md)\n- 延伸阅读：[hello-world.md 的详情](hello-world.md)\n- 延伸阅读：[post_1.md 的详情](post_1.md)\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_12",
+      "label": "Building about Space 12",
+      "group": "space",
+      "content": "# Building about Space 12\n\n这里是关于 **Space** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Cat**。\n\n### 关联文章\n- 参考资料：[[post_6]]\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_13",
+      "label": "Exploring about Coffee 13",
+      "group": "coffee",
+      "content": "# Exploring about Coffee 13\n\n这里是关于 **Coffee** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Design**。\n\n### 关联文章\n- 参考资料：[[post_9]]\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_14",
+      "label": "Exploring about Space 14",
+      "group": "space",
+      "content": "# Exploring about Space 14\n\n这里是关于 **Space** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Design**。\n\n### 关联文章\n- 参考资料：[[post_8]]\n- 延伸阅读：[post_9.md 的详情](post_9.md)\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_15",
+      "label": "Dreaming about Music 15",
+      "group": "music",
+      "content": "# Dreaming about Music 15\n\n这里是关于 **Music** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Space**。\n\n### 关联文章\n- 参考资料：[[post_8]]\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_16",
+      "label": "Loving about AI 16",
+      "group": "ai",
+      "content": "# Loving about AI 16\n\n这里是关于 **AI** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **GameDev**。\n\n### 关联文章\n- 参考资料：[[post_4]]\n- 延伸阅读：[post_5.md 的详情](post_5.md)\n- 参考资料：[[post_10]]\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_17",
+      "label": "Loving about Coffee 17",
+      "group": "coffee",
+      "content": "# Loving about Coffee 17\n\n这里是关于 **Coffee** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **GameDev**。\n\n### 关联文章\n- 延伸阅读：[post_16.md 的详情](post_16.md)\n- 延伸阅读：[post_9.md 的详情](post_9.md)\n- 延伸阅读：[post_14.md 的详情](post_14.md)\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_18",
+      "label": "Dreaming about Quantum 18",
+      "group": "quantum",
+      "content": "# Dreaming about Quantum 18\n\n这里是关于 **Quantum** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Design**。\n\n### 关联文章\n- 参考资料：[[post_7]]\n- 延伸阅读：[post_15.md 的详情](post_15.md)\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_19",
+      "label": "Thinking about Design 19",
+      "group": "design",
+      "content": "# Thinking about Design 19\n\n这里是关于 **Design** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Cyberpunk**。\n\n### 关联文章\n- 延伸阅读：[hello-world.md 的详情](hello-world.md)\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_2",
+      "label": "Building about Cat 2",
+      "group": "cat",
+      "content": "# Building about Cat 2\n\n这里是关于 **Cat** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Design**。\n\n### 关联文章\n- 参考资料：[[post_1]]\n- 延伸阅读：[hello-world.md 的详情](hello-world.md)\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_20",
+      "label": "Fixing about Cyberpunk 20",
+      "group": "cyberpunk",
+      "content": "# Fixing about Cyberpunk 20\n\n这里是关于 **Cyberpunk** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Coffee**。\n\n### 关联文章\n- 参考资料：[[post_16]]\n- 延伸阅读：[post_11.md 的详情](post_11.md)\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_3",
+      "label": "Thinking about GameDev 3",
+      "group": "gamedev",
+      "content": "# Thinking about GameDev 3\n\n这里是关于 **GameDev** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Coffee**。\n\n### 关联文章\n- 参考资料：[[post_1]]\n- 参考资料：[[hello-world]]\n- 延伸阅读：[post_2.md 的详情](post_2.md)\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_4",
+      "label": "Building about GameDev 4",
+      "group": "gamedev",
+      "content": "# Building about GameDev 4\n\n这里是关于 **GameDev** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Coffee**。\n\n### 关联文章\n- 延伸阅读：[post_3.md 的详情](post_3.md)\n- 延伸阅读：[hello-world.md 的详情](hello-world.md)\n- 参考资料：[[post_1]]\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_5",
+      "label": "Dreaming about Design 5",
+      "group": "design",
+      "content": "# Dreaming about Design 5\n\n这里是关于 **Design** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Quantum**。\n\n### 关联文章\n- 参考资料：[[post_1]]\n- 延伸阅读：[post_2.md 的详情](post_2.md)\n- 参考资料：[[post_3]]\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_6",
+      "label": "Loving about React 6",
+      "group": "react",
+      "content": "# Loving about React 6\n\n这里是关于 **React** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Quantum**。\n\n### 关联文章\n- 参考资料：[[post_5]]\n- 参考资料：[[hello-world]]\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_7",
+      "label": "Loving about Cat 7",
+      "group": "cat",
+      "content": "# Loving about Cat 7\n\n这里是关于 **Cat** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Music**。\n\n### 关联文章\n- 参考资料：[[post_3]]\n- 参考资料：[[post_6]]\n- 参考资料：[[post_1]]\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_8",
+      "label": "Thinking about Quantum 8",
+      "group": "quantum",
+      "content": "# Thinking about Quantum 8\n\n这里是关于 **Quantum** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Quantum**。\n\n### 关联文章\n- 参考资料：[[post_4]]\n- 参考资料：[[hello-world]]\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    },
+    {
+      "id": "post_9",
+      "label": "Building about GameDev 9",
+      "group": "gamedev",
+      "content": "# Building about GameDev 9\n\n这里是关于 **GameDev** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Cat**。\n\n### 关联文章\n- 参考资料：[[post_6]]\n- 延伸阅读：[post_3.md 的详情](post_3.md)\n- 延伸阅读：[post_4.md 的详情](post_4.md)\n\n> 这是一个自动生成的测试片段。\n",
+      "val": 1
+    }
+  ],
+  "links": [
+    {
+      "source": "post_10",
+      "target": "hello-world"
+    },
+    {
+      "source": "post_10",
+      "target": "post_5"
+    },
+    {
+      "source": "post_10",
+      "target": "post_4"
+    },
+    {
+      "source": "post_12",
+      "target": "post_6"
+    },
+    {
+      "source": "post_13",
+      "target": "post_9"
+    },
+    {
+      "source": "post_14",
+      "target": "post_8"
+    },
+    {
+      "source": "post_15",
+      "target": "post_8"
+    },
+    {
+      "source": "post_16",
+      "target": "post_4"
+    },
+    {
+      "source": "post_16",
+      "target": "post_10"
+    },
+    {
+      "source": "post_18",
+      "target": "post_7"
+    },
+    {
+      "source": "post_2",
+      "target": "post_1"
+    },
+    {
+      "source": "post_20",
+      "target": "post_16"
+    },
+    {
+      "source": "post_3",
+      "target": "post_1"
+    },
+    {
+      "source": "post_3",
+      "target": "hello-world"
+    },
+    {
+      "source": "post_4",
+      "target": "post_1"
+    },
+    {
+      "source": "post_5",
+      "target": "post_1"
+    },
+    {
+      "source": "post_5",
+      "target": "post_3"
+    },
+    {
+      "source": "post_6",
+      "target": "post_5"
+    },
+    {
+      "source": "post_6",
+      "target": "hello-world"
+    },
+    {
+      "source": "post_7",
+      "target": "post_3"
+    },
+    {
+      "source": "post_7",
+      "target": "post_6"
+    },
+    {
+      "source": "post_7",
+      "target": "post_1"
+    },
+    {
+      "source": "post_8",
+      "target": "post_4"
+    },
+    {
+      "source": "post_8",
+      "target": "hello-world"
+    },
+    {
+      "source": "post_9",
+      "target": "post_6"
+    }
+  ]
+}
