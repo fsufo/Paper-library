@@ -151,179 +151,223 @@
   "links": [
     {
       "source": "post_1",
-      "target": "hello-world"
+      "target": "hello-world",
+      "type": "md"
     },
     {
       "source": "post_10",
-      "target": "hello-world"
+      "target": "hello-world",
+      "type": "wiki"
     },
     {
       "source": "post_10",
-      "target": "post_5"
+      "target": "post_5",
+      "type": "wiki"
     },
     {
       "source": "post_10",
-      "target": "post_4"
+      "target": "post_4",
+      "type": "wiki"
     },
     {
       "source": "post_11",
-      "target": "post_3"
+      "target": "post_3",
+      "type": "md"
     },
     {
       "source": "post_11",
-      "target": "hello-world"
+      "target": "hello-world",
+      "type": "md"
     },
     {
       "source": "post_11",
-      "target": "post_1"
+      "target": "post_1",
+      "type": "md"
     },
     {
       "source": "post_12",
-      "target": "post_6"
+      "target": "post_6",
+      "type": "wiki"
     },
     {
       "source": "post_13",
-      "target": "post_9"
+      "target": "post_9",
+      "type": "wiki"
     },
     {
       "source": "post_14",
-      "target": "post_8"
+      "target": "post_8",
+      "type": "wiki"
     },
     {
       "source": "post_14",
-      "target": "post_9"
+      "target": "post_9",
+      "type": "md"
     },
     {
       "source": "post_15",
-      "target": "post_8"
+      "target": "post_8",
+      "type": "wiki"
     },
     {
       "source": "post_16",
-      "target": "post_4"
+      "target": "post_4",
+      "type": "wiki"
     },
     {
       "source": "post_16",
-      "target": "post_10"
+      "target": "post_10",
+      "type": "wiki"
     },
     {
       "source": "post_16",
-      "target": "post_5"
+      "target": "post_5",
+      "type": "md"
     },
     {
       "source": "post_17",
-      "target": "post_16"
+      "target": "post_16",
+      "type": "md"
     },
     {
       "source": "post_17",
-      "target": "post_9"
+      "target": "post_9",
+      "type": "md"
     },
     {
       "source": "post_17",
-      "target": "post_14"
+      "target": "post_14",
+      "type": "md"
     },
     {
       "source": "post_18",
-      "target": "post_7"
+      "target": "post_7",
+      "type": "wiki"
     },
     {
       "source": "post_18",
-      "target": "post_15"
+      "target": "post_15",
+      "type": "md"
     },
     {
       "source": "post_19",
-      "target": "hello-world"
+      "target": "hello-world",
+      "type": "md"
     },
     {
       "source": "post_2",
-      "target": "post_1"
+      "target": "post_1",
+      "type": "wiki"
     },
     {
       "source": "post_2",
-      "target": "hello-world"
+      "target": "hello-world",
+      "type": "md"
     },
     {
       "source": "post_20",
-      "target": "post_16"
+      "target": "post_16",
+      "type": "wiki"
     },
     {
       "source": "post_20",
-      "target": "post_11"
+      "target": "post_11",
+      "type": "md"
     },
     {
       "source": "post_3",
-      "target": "post_1"
+      "target": "post_1",
+      "type": "wiki"
     },
     {
       "source": "post_3",
-      "target": "hello-world"
+      "target": "hello-world",
+      "type": "wiki"
     },
     {
       "source": "post_3",
-      "target": "post_2"
+      "target": "post_2",
+      "type": "md"
     },
     {
       "source": "post_4",
-      "target": "post_1"
+      "target": "post_1",
+      "type": "wiki"
     },
     {
       "source": "post_4",
-      "target": "post_3"
+      "target": "post_3",
+      "type": "md"
     },
     {
       "source": "post_4",
-      "target": "hello-world"
+      "target": "hello-world",
+      "type": "md"
     },
     {
       "source": "post_5",
-      "target": "post_1"
+      "target": "post_1",
+      "type": "wiki"
     },
     {
       "source": "post_5",
-      "target": "post_3"
+      "target": "post_3",
+      "type": "wiki"
     },
     {
       "source": "post_5",
-      "target": "post_2"
+      "target": "post_2",
+      "type": "md"
     },
     {
       "source": "post_6",
-      "target": "post_5"
+      "target": "post_5",
+      "type": "wiki"
     },
     {
       "source": "post_6",
-      "target": "hello-world"
+      "target": "hello-world",
+      "type": "wiki"
     },
     {
       "source": "post_7",
-      "target": "post_3"
+      "target": "post_3",
+      "type": "wiki"
     },
     {
       "source": "post_7",
-      "target": "post_6"
+      "target": "post_6",
+      "type": "wiki"
     },
     {
       "source": "post_7",
-      "target": "post_1"
+      "target": "post_1",
+      "type": "wiki"
     },
     {
       "source": "post_8",
-      "target": "post_4"
+      "target": "post_4",
+      "type": "wiki"
     },
     {
       "source": "post_8",
-      "target": "hello-world"
+      "target": "hello-world",
+      "type": "wiki"
     },
     {
       "source": "post_9",
-      "target": "post_6"
+      "target": "post_6",
+      "type": "wiki"
     },
     {
       "source": "post_9",
-      "target": "post_3"
+      "target": "post_3",
+      "type": "md"
     },
     {
       "source": "post_9",
-      "target": "post_4"
+      "target": "post_4",
+      "type": "md"
     }
   ]
 }

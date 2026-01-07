@@ -10,10 +10,11 @@ import subprocess
 import time
 
 # --- 配置 ---
-VERSION = "4.0 (VSCode Friendly)"
+VERSION = "4.1 (Link Types)"
 POSTS_DIR = os.path.join(os.getcwd(), 'posts')
 OUTPUT_FILE = os.path.join(os.getcwd(), 'posts_data.json')
 SERVER_PORT = 8080
+ENABLE_WIKI_LINKS = True # 是否开启双链 [[...]]
 
 def parse_front_matter(content):
     metadata = {}
@@ -70,12 +71,14 @@ def build_data():
         # 简单优化：不需要每次都 compile
         
         # 1. Wiki Links [[Target]]
-        for match in link_pattern_wiki.findall(node['content']):
-            target = match.split('|')[0].strip()
-            for k, v in id_map.items():
-                if k.lower() == target.lower() or k.replace('.md','').lower() == target.lower():
-                    if v != node['id']: links.append({"source": node['id'], "target": v})
-                    break
+        if ENABLE_WIKI_LINKS:
+            for match in link_pattern_wiki.findall(node['content']):
+                target = match.split('|')[0].strip()
+                for k, v in id_map.items():
+                    if k.lower() == target.lower() or k.replace('.md','').lower() == target.lower():
+                        if v != node['id']: 
+                            links.append({"source": node['id'], "target": v, "type": "wiki"})
+                        break
         
         # 2. Markdown Links [Title](./Target.md)
         for match in link_pattern_md.findall(node['content']):
@@ -85,7 +88,7 @@ def build_data():
             
             # SimpleID Match
             if target_id in id_map and id_map[target_id] != node['id']:
-                links.append({"source": node['id'], "target": id_map[target_id]})
+                links.append({"source": node['id'], "target": id_map[target_id], "type": "md"})
 
     # Remove duplicates
     unique_links = []

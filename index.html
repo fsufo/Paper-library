@@ -61,10 +61,69 @@
 <body>
     <div id="3d-graph"></div>
     <div id="helicopter-cat"><div class="cat-body-container"><div id="zzz-bubble">Zzz...</div><div class="propeller"></div><div class="cat-ear left"></div><div class="cat-ear right"></div><div class="cat-body"><div class="cat-face"><div class="eye left"></div><div class="eye right"></div></div></div></div></div>
+    
+    <!-- Settings Panel -->
+    <div id="settings-panel" style="position: fixed; bottom: 20px; left: 20px; z-index: 99; background: rgba(10, 15, 25, 0.85); padding: 15px; border-radius: 12px; border: 1px solid rgba(100, 150, 255, 0.2); backdrop-filter: blur(5px); color: #ccc; font-size: 13px; font-family: 'Segoe UI', sans-serif;">
+        <div style="margin-bottom: 8px; font-weight: bold; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">View Settings</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="cursor: pointer; display: flex; align-items: center;"><input type="checkbox" id="chk-wiki" checked onchange="updateGraphFilter()" style="margin-right: 8px; accent-color: #00ccff;">Show Wiki Links [[ ]]</label>
+            <label style="cursor: pointer; display: flex; align-items: center;"><input type="checkbox" id="chk-md" checked onchange="updateGraphFilter()" style="margin-right: 8px; accent-color: #ffaa00;">Show MD Links [ ]</label>
+            <label style="cursor: pointer; display: flex; align-items: center;"><input type="checkbox" id="chk-gravity" checked onchange="updateGraphFilter()" style="margin-right: 8px; accent-color: #ff1133;">Enable Tag Gravity</label>
+        </div>
+    </div>
+
     <div class="search-wrapper"><div id="search-container"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search universe..." autocomplete="off"/></div><div id="search-results"></div></div>
     <div id="article-modal"><div class="close-btn" onclick="closeArticle()">&times;</div><div class="article-content markdown-body" id="markdown-container"></div></div>
     
     <script>
+        let gData = null; // Store full data globally
+
+        function updateGraphFilter() {
+            if(!gData || !Graph) return;
+            
+            const showWiki = document.getElementById('chk-wiki').checked;
+            const showMd = document.getElementById('chk-md').checked;
+            const enableGravity = document.getElementById('chk-gravity').checked;
+            
+            // 1. Filter valid links
+            let filteredLinks = gData.links.filter(l => {
+                // Keep cluster links only if gravity is enabled
+                if (l.isClusterLink) return enableGravity;
+                
+                // Keep normal links based on type
+                if (l.type === 'wiki') return showWiki;
+                if (l.type === 'md') return showMd;
+                return true; // Default keep others
+            });
+
+            // 2. Clone structure to avoid modifying original objects excessively
+            // Note: 3d-force-graph modifies objects (adds x,y,z), so we need to be careful.
+            // But simply passing a new array of references usually works for update.
+            Graph.graphData({
+                nodes: gData.nodes,
+                links: filteredLinks
+            });
+
+            // 3. Adjust Physics based on Gravity Toggle
+            // If Gravity is OFF, we might want less repulsion since nodes aren't being pulled together
+            const chargeStrength = enableGravity ? -120 : -60;
+            Graph.d3Force('charge').strength(chargeStrength);
+            
+            // Re-apply link coloring
+            setTimeout(() => {
+                const currentLinks = Graph.graphData().links.filter(l => !l.isClusterLink);
+                currentLinks.forEach(link => {
+                    if(link.__lineObj && link.sourceNode && link.targetNode) {
+                        // Re-trigger color update
+                        const c1 = new THREE.Color(link.sourceNode.color), c2 = new THREE.Color(link.targetNode.color);
+                        const attr = link.__lineObj.geometry.attributes.color;
+                        attr.setXYZ(0, c1.r, c1.g, c1.b); attr.setXYZ(1, c1.r, c1.g, c1.b);
+                        attr.setXYZ(3, c2.r, c2.g, c2.b); attr.setXYZ(4, c2.r, c2.g, c2.b);
+                        attr.needsUpdate = true;
+                    }
+                });
+            }, 100);
+        }
         // MD 链接劫持系统
         document.getElementById('markdown-container').addEventListener('click', function(e) {
             if(e.target.tagName === 'A') {
@@ -102,7 +161,7 @@
                     // 外部链接，新标签页打开
                     window.open(href, '_blank');
                 }
-            }
+            }False
         });
 
         let Graph, maxDegree = 1;
@@ -263,46 +322,38 @@
             Object.keys(tagGroups).forEach(tag => {
                 const nodes = tagGroups[tag];
                 if(nodes.length > 1) {
-                    // 让同Tag的所有节点连接到该Tag的第一个节点 (Hub Star Mode)
-                    // 这样会形成一个个以Tag为中心的星团，但不会显式画线
                     const hub = nodes[0];
                     for(let i=1; i<nodes.length; i++) {
-                        data.links.push({
-                            source: nodes[i].id,
-                            target: hub.id,
-                            isClusterLink: true // 标记为聚类链
-                        });
+                        data.links.push({ source: nodes[i].id, target: hub.id, isClusterLink: true });
                     }
                 }
             });
 
-            // 3. 处理实体链接
+            // 3. 处理实体链接 & 预处理
             data.links.forEach(l => {
-                if(l.isClusterLink) return; // 跳过聚类链的处理
+                // Ensure type exists (default to 'wiki' if undefined for compatibility)
+                if(!l.isClusterLink && !l.type) l.type = 'wiki';
+
+                // Pre-resolve objects for ForceGraph (optional, but good for custom logic)
                 const a = map[l.source], b = map[l.target];
-                if(a && b) { a.neighbors.push(b); b.neighbors.push(a); l.sourceNode = a; l.targetNode = b; }
+                if(a && b) { 
+                    if(!l.isClusterLink) { a.neighbors.push(b); b.neighbors.push(a); }
+                    l.sourceNode = a; l.targetNode = b; 
+                }
             });
 
             maxDegree = 0; data.nodes.forEach(n => { if(n.neighbors.length > maxDegree) maxDegree = n.neighbors.length; });
             if(maxDegree < 1) maxDegree = 1;
-            Graph.graphData(data);
 
+            // Save to Global
+            gData = data;
+
+            // Initialize Layout via Filter function
             // 4. 定制聚类力
-            Graph.d3Force('charge').strength(-120); // 增加斥力，防止太密集
+            Graph.d3Force('charge').strength(-120); 
             Graph.d3Force('link').distance(link => link.isClusterLink ? 40 : 100).strength(link => link.isClusterLink ? 0.05 : 1);
-
-            setTimeout(() => {
-                const validLinks = Graph.graphData().links.filter(l => !l.isClusterLink);
-                validLinks.forEach(link => {
-                    if(link.__lineObj && link.sourceNode && link.targetNode) {
-                        const c1 = new THREE.Color(link.sourceNode.color), c2 = new THREE.Color(link.targetNode.color);
-                        const attr = link.__lineObj.geometry.attributes.color;
-                        attr.setXYZ(0, c1.r, c1.g, c1.b); attr.setXYZ(1, c1.r, c1.g, c1.b); // Start
-                        attr.setXYZ(3, c2.r, c2.g, c2.b); attr.setXYZ(4, c2.r, c2.g, c2.b); // End
-                        attr.needsUpdate = true;
-                    }
-                });
-            }, 500);
+            
+            updateGraphFilter(); // Initial Render
         });
 
         // 动画循环
