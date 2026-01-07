@@ -72,6 +72,12 @@
         </div>
     </div>
 
+    <!-- Top Info Bar -->
+    <div id="top-info-bar" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 40; pointer-events: none; opacity: 0; transition: opacity 0.3s; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">
+        <div id="info-title" style="font-size: 24px; font-weight: bold; color: #fff; letter-spacing: 1px;"></div>
+        <div id="info-tag" style="font-size: 14px; color: #88ccff; margin-top: 4px; font-family: monospace;"></div>
+    </div>
+
     <div class="search-wrapper"><div id="search-container"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search universe..." autocomplete="off"/></div><div id="search-results"></div></div>
     <div id="article-modal"><div class="close-btn" onclick="closeArticle()">&times;</div><div class="article-content markdown-body" id="markdown-container"></div></div>
     
@@ -227,36 +233,38 @@
             else return c2.clone().lerp(c3, (t - 0.4) * 1.6).getStyle();
         }
 
-        // 视觉生成器 (更长更细的十字)
-        function createGlowSprite(color, size, degree) {
+        // 视觉生成器 1: 核心光球
+        function createCoreSprite(color) {
+            const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d'); const c = 32;
+            const grad = ctx.createRadialGradient(c, c, 2, c, c, 30);
+            grad.addColorStop(0, 'rgba(255,255,255,1)'); grad.addColorStop(0.4, color); grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(c, c, 30, 0, Math.PI*2); ctx.fill();
+            const mat = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+            return new THREE.Sprite(mat);
+        }
+
+        // 视觉生成器 2: 十字光芒
+        function createCrossSprite(color, degree) {
             const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256; 
-            const ctx = canvas.getContext('2d'); const c = 128; // Center
-            
-            // Core Glow
-            const grad = ctx.createRadialGradient(c, c, 4, c, c, 40);
-            grad.addColorStop(0, 'rgba(255,255,255,1)'); grad.addColorStop(0.3, color); grad.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(c, c, 40, 0, Math.PI*2); ctx.fill();
-            
-            // Cross Rays
+            const ctx = canvas.getContext('2d'); const c = 128;
             ctx.globalCompositeOperation = 'lighter';
-            const rayScale = 0.8 + (degree / maxDegree) * 0.5;
+            
+            // 确保 maxDegree 有值，防止除以0
+            const safeMax = (typeof maxDegree !== 'undefined' && maxDegree > 0) ? maxDegree : 1;
+            const rayScale = 0.8 + (degree / safeMax) * 0.5;
+            
             const drawRay = (w, h, a) => {
                 const g = ctx.createLinearGradient(0, c-h, 0, c+h);
                 g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(0.5,`rgba(255,255,255,${a})`); g.addColorStop(1,'rgba(0,0,0,0)');
                 ctx.fillStyle = g; ctx.fillRect(c-w/2, c-h, w, h*2);
             };
-            // Main Cross (Long)
             drawRay(4, 100*rayScale, 0.9);
             ctx.save(); ctx.translate(c, c); ctx.rotate(Math.PI/2); ctx.translate(-c, -c); 
-            drawRay(4, 80*rayScale, 0.9); 
-            ctx.restore();
+            drawRay(4, 80*rayScale, 0.9); ctx.restore();
             
             const mat = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-            const sprite = new THREE.Sprite(mat);
-            const finalSize = size * (1 + (degree/maxDegree)*0.5);
-            sprite.scale.set(finalSize, finalSize, 1);
-            sprite.userData = { phase: Math.random()*Math.PI*2, baseScale: finalSize, currentOpacity: 1.0, speed: 0.5+Math.random() };
-            return sprite;
+            return new THREE.Sprite(mat);
         }
 
         // 初始化图表
@@ -283,9 +291,26 @@
                 let color = getStarColor(degree); node.color = color; 
                 const group = new THREE.Group();
                 
-                // 星球本体
-                const sprite = createGlowSprite(color, 12, degree); 
-                group.add(sprite); group.sprite = sprite;
+                // 1. 核心球体
+                const core = createCoreSprite(color);
+                const coreSize = 12; 
+                core.scale.set(coreSize, coreSize, 1);
+                group.add(core); group.core = core;
+
+                // 2. 十字光芒 (独立，以便动态缩放)
+                const cross = createCrossSprite(color, degree);
+                const crossSize = 12 * (1 + (degree/maxDegree)*0.5);
+                cross.scale.set(crossSize, crossSize, 1);
+                group.add(cross); group.cross = cross;
+
+                // 共享状态
+                group.userData = { 
+                    phase: Math.random()*Math.PI*2, 
+                    baseScaleCore: coreSize,
+                    baseScaleCross: crossSize,
+                    currentOpacity: 1.0, 
+                    speed: 0.5+Math.random() 
+                };
                 
                 // 标题 (白色)
                 const text = new SpriteText(node.label); 
@@ -306,6 +331,16 @@
                 if(modal.classList.contains('active')) return;
                 hoverNode = node || null; document.body.style.cursor = node ? 'pointer' : null;
                 highlightNodes.clear(); highlightLinks.clear();
+                
+                // Top Info Bar Update
+                const infoBar = document.getElementById('top-info-bar');
+                if(node) {
+                    document.getElementById('info-title').innerText = node.label;
+                    document.getElementById('info-tag').innerText = node.group ? `#${node.group}` : '';
+                    infoBar.style.opacity = 1;
+                } else {
+                    infoBar.style.opacity = 0;
+                }
                 
                 if (node) {
                     highlightNodes.add(node);
@@ -405,6 +440,47 @@
             Graph.d3Force('charge').strength(-120); 
             Graph.d3Force('link').distance(link => link.isClusterLink ? 40 : 100).strength(link => link.isClusterLink ? 0.05 : 1);
             
+            // 5. 自定义鼠标缩放 (Zoom to Cursor)
+            const controls = Graph.controls();
+            controls.enableZoom = false; // Disable default center-zoom
+
+            document.addEventListener('wheel', (e) => {
+                if(modal.classList.contains('active')) return; // Don't zoom if reading
+                e.preventDefault();
+
+                const cam = Graph.camera();
+                const target = controls.target;
+                
+                // Calculate Mouse Direction in World Space
+                const mouse = new THREE.Vector2();
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(mouse, cam);
+
+                // Find a Pivot Point (Project cursor to the plane of current target)
+                // Use a plane perpendicular to camera direction passing through target
+                const planeNormal = new THREE.Vector3();
+                cam.getWorldDirection(planeNormal);
+                const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, target);
+                const pivot = new THREE.Vector3();
+                raycaster.ray.intersectPlane(plane, pivot);
+                
+                if(!pivot) return; // Should not happen usually
+
+                // Zoom Factor
+                const zoomSpeed = 0.05; // 灵敏度
+                const factor = e.deltaY > 0 ? (1 + zoomSpeed) : (1 / (1 + zoomSpeed));
+
+                // Apply Zoom centered at Pivot
+                // NewPos = Pivot + (Pos - Pivot) * factor
+                cam.position.sub(pivot).multiplyScalar(factor).add(pivot);
+                target.sub(pivot).multiplyScalar(factor).add(pivot);
+
+                controls.update();
+            }, { passive: false });
+
             updateGraphFilter(); // Initial Render
         });
 
@@ -444,14 +520,30 @@
                 
                 // 本体消隐
                 let targetOp = (isHovering && !highlightNodes.has(node)) ? 0.1 : 1.0;
-                group.sprite.userData.currentOpacity += (targetOp - group.sprite.userData.currentOpacity) * 0.1;
-                group.sprite.material.opacity = group.sprite.userData.currentOpacity;
+                group.userData.currentOpacity += (targetOp - group.userData.currentOpacity) * 0.1;
+                const op = group.userData.currentOpacity;
                 
-                // 呼吸
-                if(group.sprite.userData.currentOpacity > 0.5) {
-                    const s = 1 + Math.sin(time * group.sprite.userData.speed + group.sprite.userData.phase) * 0.08;
-                    const b = group.sprite.userData.baseScale;
-                    group.sprite.scale.set(b*s, b*s, 1);
+                // 应用透明度
+                group.core.material.opacity = op;
+                group.cross.material.opacity = op;
+                
+                // 呼吸 & 动态缩放
+                if(op > 0.5) {
+                    const timeS = Math.sin(time * group.userData.speed + group.userData.phase);
+                    
+                    // 1. Core: 仅呼吸
+                    const sCore = 1 + timeS * 0.08;
+                    const bCore = group.userData.baseScaleCore;
+                    group.core.scale.set(bCore*sCore, bCore*sCore, 1);
+                    
+                    // 2. Cross: 呼吸 + 距离自适应放大 (Smart Scaling)
+                    // 距离越远，缩放倍率越大，补偿透视使其可见
+                    // dist=100 -> 1x, dist=1000 -> 2x?
+                    const distFactor = 1 + Math.min(dist / 400, 4.0); 
+                    
+                    const sCross = (1 + timeS * 0.08) * distFactor;
+                    const bCross = group.userData.baseScaleCross;
+                    group.cross.scale.set(bCross*sCross, bCross*sCross, 1);
                 }
             });
             
