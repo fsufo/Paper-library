@@ -521,22 +521,34 @@
             })
             .onNodeClick(node => {
                 if(!node) return;
-                selectedNode = node; // Set selection
-                setHighlightMode(node); // Activate highlight
                 
-                // 计算当前相机到目标节点的真实距离
-                const camPos = Graph.camera().position;
-                const dist = Math.hypot(camPos.x - node.x, camPos.y - node.y, camPos.z - node.z);
+                // Check view status BEFORE updating selection (to determine action)
+                // 锁定判断逻辑：需要同时满足 1.已选中 2.距离合适 3.视角居中
+                const isSelected = (selectedNode && selectedNode.id === node.id);
                 
-                // 距离阈值：例如 flyTo 停在 180 处，我们在 200 以内认为已到达
-                const ARRIVAL_THRESHOLD = 200;
+                const cam = Graph.camera();
+                const nodePos = new THREE.Vector3(node.x, node.y, node.z);
+                const camPos = new THREE.Vector3(cam.position.x, cam.position.y, cam.position.z);
+                
+                // 1. Distance Check
+                const dist = camPos.distanceTo(nodePos);
+                const isDistOk = Math.abs(dist - 180) < 40; // Allow slight tolerance around 120 (80-160)
+                
+                // 2. Centered Check (Angle)
+                const viewDir = new THREE.Vector3();
+                cam.getWorldDirection(viewDir); // Camera look direction
+                const toNodeDir = nodePos.clone().sub(camPos).normalize();
+                const angle = viewDir.angleTo(toNodeDir);
+                const isCentered = angle < 0.15; // Approx 8.5 degrees tolerance
 
-                // 若已是选中状态 且 距离足够近 -> 打开文章
-                if (selectedNode && selectedNode.id === node.id && dist < ARRIVAL_THRESHOLD) {
+                // Always activate visual selection first
+                selectedNode = node;
+                setHighlightMode(node);
+
+                if (isSelected && isDistOk && isCentered) {
                     openArticle(node);
                 } else {
-                    // 否则 -> 飞过去
-                    selectedNode = node;
+                    // Focus Mode: Pull back/Center
                     flyTo(node, 1200);
                 }
             })
