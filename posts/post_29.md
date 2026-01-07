@@ -1,18 +1,18 @@
 ---
-title: Lighting and Baking 5
-date: 2024-01-27
+title: Character Controller Guide 30
+date: 2024-01-08
 ---
 
-# Lighting and Baking 5
+# Character Controller Guide 30
 
 This is a generated post content for testing purposes.
 
-#C#
+#C# #Networking
 
 ## Overview
 Here we discuss **C#** and its applications.
 
-Refer to [[post_3]] for more info. Also check out [Previous Post](./post_3.md).
+Refer to [[post_25]] for more info. Also check out [Previous Post](./post_25.md).
 
 ## Details
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 

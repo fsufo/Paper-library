@@ -1,18 +1,18 @@
 ---
-title: Lighting and Baking 5
-date: 2024-01-27
+title: Optimizing Game Performance 28
+date: 2024-01-01
 ---
 
-# Lighting and Baking 5
+# Optimizing Game Performance 28
 
 This is a generated post content for testing purposes.
 
-#C#
+#C# #Rendering #Unity
 
 ## Overview
 Here we discuss **C#** and its applications.
 
-Refer to [[post_3]] for more info. Also check out [Previous Post](./post_3.md).
+Refer to [[post_1]] for more info. Also check out [Previous Post](./post_1.md).
 
 ## Details
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 

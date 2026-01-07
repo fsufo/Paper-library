@@ -1,18 +1,18 @@
 ---
-title: Lighting and Baking 5
-date: 2024-01-27
+title: Character Controller Guide 1
+date: 2024-01-18
 ---
 
-# Lighting and Baking 5
+# Character Controller Guide 1
 
 This is a generated post content for testing purposes.
 
-#C#
+#GameDesign
 
 ## Overview
-Here we discuss **C#** and its applications.
+Here we discuss **GameDesign** and its applications.
 
-Refer to [[post_3]] for more info. Also check out [Previous Post](./post_3.md).
+
 
 ## Details
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 

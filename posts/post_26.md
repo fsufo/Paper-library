@@ -1,18 +1,18 @@
 ---
-title: Lighting and Baking 5
-date: 2024-01-27
+title: Post-processing Stack Overview 27
+date: 2024-01-18
 ---
 
-# Lighting and Baking 5
+# Post-processing Stack Overview 27
 
 This is a generated post content for testing purposes.
 
-#C#
+#Physics
 
 ## Overview
-Here we discuss **C#** and its applications.
+Here we discuss **Physics** and its applications.
 
-Refer to [[post_3]] for more info. Also check out [Previous Post](./post_3.md).
+Refer to [[post_12]] for more info. Also check out [Previous Post](./post_12.md).
 
 ## Details
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 

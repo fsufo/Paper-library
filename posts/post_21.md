@@ -1,18 +1,18 @@
 ---
-title: Lighting and Baking 15
-date: 2024-01-29
+title: Post-processing Stack Overview 22
+date: 2024-01-26
 ---
 
-# Lighting and Baking 15
+# Post-processing Stack Overview 22
 
 This is a generated post content for testing purposes.
 
-#Networking
+#Networking #Rendering
 
 ## Overview
 Here we discuss **Networking** and its applications.
 
-Refer to [[post_5]] for more info. Also check out [Previous Post](./post_5.md).
+Refer to [[post_14]] for more info. Also check out [Previous Post](./post_14.md).
 
 ## Details
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 

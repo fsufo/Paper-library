@@ -1,18 +1,18 @@
 ---
-title: Lighting and Baking 5
-date: 2024-01-27
+title: The Basics of Unity Physics 24
+date: 2024-01-26
 ---
 
-# Lighting and Baking 5
+# The Basics of Unity Physics 24
 
 This is a generated post content for testing purposes.
 
-#C#
+#VFX #Physics
 
 ## Overview
-Here we discuss **C#** and its applications.
+Here we discuss **VFX** and its applications.
 
-Refer to [[post_3]] for more info. Also check out [Previous Post](./post_3.md).
+Refer to [[post_0]] for more info. Also check out [Previous Post](./post_0.md).
 
 ## Details
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 

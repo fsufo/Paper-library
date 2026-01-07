@@ -52,11 +52,29 @@ def build_data():
             id_map[filename] = file_id
             id_map[file_id] = file_id 
             
+            # --- Tag Processing Start ---
+            # 仅识别正文中的 #Tag 格式
+            # 规则：#开头，前有空格或行首，\w+ 匹配所有文字(含中文)和数字、下划线
+            inline_tags = re.findall(r'(?:^|\s)#(\w+)', content)
+            
+            # 去重 (保持顺序)
+            combined_tags = []
+            seen = set()
+            for t in inline_tags:
+                if t and t not in seen:
+                    combined_tags.append(t)
+                    seen.add(t)
+            
+            # 取第一个作为主分组，如果没有则为 default
+            primary_group = combined_tags[0] if combined_tags else 'default'
+            # --- Tag Processing End ---
+
             nodes.append({
                 "id": file_id,
                 "label": meta.get('title', file_id),
-                "group": meta.get('tags', ['default'])[0] if isinstance(meta.get('tags'), list) else 'default',
-                "content": content, # 注意：内容包含在 JSON 中
+                "group": primary_group,     # 用于决定颜色的主标签
+                "all_tags": combined_tags,  # 存储完整的多标签列表
+                "content": content, 
                 "val": 1
             })
         except Exception as e:
@@ -97,7 +115,8 @@ def build_data():
     unique_links = []
     seen = set()
     for l in links:
-        key = f"{l['source']}->{l['target']}"
+        # 修正：将 type 也加入去重 Key，防止 Wiki Link 覆盖了同目标的 MD Link
+        key = f"{l['source']}->{l['target']}:{l['type']}"
         if key not in seen:
             seen.add(key)
             unique_links.append(l)

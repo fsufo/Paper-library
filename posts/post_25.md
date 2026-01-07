@@ -1,18 +1,18 @@
 ---
-title: Optimizing Game Performance 6
-date: 2024-01-30
+title: Optimizing Game Performance 26
+date: 2024-01-13
 ---
 
-# Optimizing Game Performance 6
+# Optimizing Game Performance 26
 
 This is a generated post content for testing purposes.
 
-#GameDesign #C# #AI
+#GameDesign #Networking #Rendering
 
 ## Overview
 Here we discuss **GameDesign** and its applications.
 
-Refer to [[post_0]] for more info. Also check out [Previous Post](./post_0.md).
+Refer to [[post_6]] for more info. Also check out [Previous Post](./post_6.md).
 
 ## Details
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 

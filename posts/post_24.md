@@ -1,18 +1,18 @@
 ---
-title: Lighting and Baking 2
+title: Procedural Generation Algorithms 25
 date: 2024-01-12
 ---
 
-# Lighting and Baking 2
+# Procedural Generation Algorithms 25
 
 This is a generated post content for testing purposes.
 
-#Modeling
+#Networking #Rendering #C#
 
 ## Overview
-Here we discuss **Modeling** and its applications.
+Here we discuss **Networking** and its applications.
 
-Refer to [[post_0]] for more info. Also check out [Previous Post](./post_0.md).
+Refer to [[post_17]] for more info. Also check out [Previous Post](./post_17.md).
 
 ## Details
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 

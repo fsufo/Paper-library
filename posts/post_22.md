@@ -1,18 +1,18 @@
 ---
-title: Lighting and Baking 5
-date: 2024-01-27
+title: VFX Graph Tutorial 23
+date: 2024-01-13
 ---
 
-# Lighting and Baking 5
+# VFX Graph Tutorial 23
 
 This is a generated post content for testing purposes.
 
-#C#
+#Shader #C# #GameDesign
 
 ## Overview
-Here we discuss **C#** and its applications.
+Here we discuss **Shader** and its applications.
 
-Refer to [[post_3]] for more info. Also check out [Previous Post](./post_3.md).
+Refer to [[post_6]] for more info. Also check out [Previous Post](./post_6.md).
 
 ## Details
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 

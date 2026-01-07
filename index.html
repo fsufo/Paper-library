@@ -353,9 +353,16 @@
                 text.material.transparent = true; text.material.opacity = 0; text.material.depthWrite = false;
                 group.add(text); group.text = text; 
                 
-                // Tag 标签 (灰色，小字体)
-                const tagStr = node.group || '';
-                const subText = new SpriteText(tagStr ? `#${tagStr}` : '');
+                // Tag 标签 (灰色，小字体，显示所有Tags)
+                // 优先使用 all_tags 数组，如果没有则回退到 group
+                let tagStr = '';
+                if (node.all_tags && node.all_tags.length > 0) {
+                    tagStr = node.all_tags.map(t => `#${t}`).join(' ');
+                } else if (node.group && node.group !== 'default') {
+                    tagStr = `#${node.group}`;
+                }
+                
+                const subText = new SpriteText(tagStr);
                 subText.color = '#88a'; subText.textHeight = 2.5; subText.position.y = -24;
                 subText.material.transparent = true; subText.material.opacity = 0; subText.material.depthWrite = false;
                 group.add(subText); group.subText = subText;
@@ -371,7 +378,15 @@
                 const infoBar = document.getElementById('top-info-bar');
                 if(node) {
                     document.getElementById('info-title').innerText = node.label;
-                    document.getElementById('info-tag').innerText = node.group ? `#${node.group}` : '';
+                    
+                    let displayTags = '';
+                    if (node.all_tags && node.all_tags.length > 0) {
+                        displayTags = node.all_tags.map(t => `#${t}`).join(' ');
+                    } else if(node.group) {
+                         displayTags = `#${node.group}`;
+                    }
+                    document.getElementById('info-tag').innerText = displayTags;
+                    
                     infoBar.style.opacity = 1;
                 } else {
                     infoBar.style.opacity = 0;
@@ -414,24 +429,40 @@
             const map = {};
             const tagGroups = {};
 
-            // 1. 建立索引 & 分组 Tag
+            // 1. 建立索引 & 分组 Tag (支持多标签聚类)
             data.nodes.forEach(n => { 
                 n.neighbors = []; 
                 map[n.id] = n; 
                 
-                // Tag Clustering Logic
-                const tag = n.group || 'default';
-                if(!tagGroups[tag]) tagGroups[tag] = [];
-                tagGroups[tag].push(n);
+                // Multi-Tag Clustering Logic
+                // 如果有 all_tags，则归入多个组；否则归入 group 主组
+                const tagsToProcess = (n.all_tags && n.all_tags.length > 0) ? n.all_tags : [n.group || 'default'];
+                
+                tagsToProcess.forEach(tag => {
+                    if(!tagGroups[tag]) tagGroups[tag] = [];
+                    tagGroups[tag].push(n);
+                });
             });
 
-            // 2. 为相同 Tag 的节点创建隐形引力链接
+            // 2. 为相同 Tag 的节点创建隐形引力链接 (多标签版)
+            // 一个节点如果属于多个 Tag 组，它会被这些组的 Hub 共同拉扯（变成交集）
             Object.keys(tagGroups).forEach(tag => {
-                const nodes = tagGroups[tag];
-                if(nodes.length > 1) {
-                    const hub = nodes[0];
-                    for(let i=1; i<nodes.length; i++) {
-                        data.links.push({ source: nodes[i].id, target: hub.id, isClusterLink: true });
+                const groupNodes = tagGroups[tag];
+                if(groupNodes.length > 1) {
+                    // 简单的策略：取该组第一个作为 Hub
+                    // (更好的策略可能是虚拟中心，但 ForceGraph 不太好做虚拟节点)
+                    const hub = groupNodes[0];
+                    
+                    for(let i=1; i<groupNodes.length; i++) {
+                        const targetNode = groupNodes[i];
+                        // 避免自己连自己
+                        if (targetNode.id !== hub.id) {
+                            data.links.push({ 
+                                source: targetNode.id, 
+                                target: hub.id, 
+                                isClusterLink: true 
+                            });
+                        }
                     }
                 }
             });
