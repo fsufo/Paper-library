@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paper-library Navigation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            background-color: #0d1117;
+            color: #c9d1d9;
+            margin: 0;
+            line-height: 1.5;
+            display: flex;
+            justify-content: center;
+            padding-top: 40px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 0 16px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 1px solid #30363d;
+            background-color: #161b22;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #8b949e;
+        }
+
+        .profile-info h1 {
+            color: #c9d1d9;
+            font-size: 26px;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .profile-info .bio {
+            color: #8b949e;
+            font-size: 16px;
+            margin-top: 8px;
+        }
+
+        .repo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .repo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .repo-card {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s;
+        }
+
+        .repo-card:hover {
+            border-color: #8b949e;
+        }
+
+        .repo-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .repo-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .repo-title a {
+            color: #58a6ff;
+            text-decoration: none;
+        }
+
+        .repo-title a:hover {
+            text-decoration: underline;
+        }
+
+        .repo-label {
+            border: 1px solid #30363d;
+            border-radius: 2em;
+            padding: 0 10px;
+            font-size: 12px;
+            color: #8b949e;
+            line-height: 22px;
+            display: inline-block;
+        }
+
+        .repo-desc {
+            color: #8b949e;
+            font-size: 14px;
+            margin: 0 0 16px 0;
+            flex-grow: 1;
+        }
+
+        .file-list {
+            margin-top: 12px;
+            border-top: 1px solid #21262d;
+            padding-top: 12px;
+            font-size: 13px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .file-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .file-icon {
+            margin-right: 8px;
+            color: #8b949e;
+        }
+
+        .file-link {
+            color: #c9d1d9;
+            text-decoration: none;
+        }
+
+        .file-link:hover {
+            color: #58a6ff;
+            text-decoration: underline;
+        }
+
+        .footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid #30363d;
+            text-align: center;
+            color: #8b949e;
+            font-size: 12px;
+            margin-bottom: 40px;
+        }
+        
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="profile-header">
+        <div class="avatar">PL</div>
+        <div class="profile-info">
+            <h1>Paper-library</h1>
+            <div class="bio">一些时尚小垃圾整理</div>
+        </div>
+    </div>
+
+    <h3>Pinned Resources</h3>
+    <div class="repo-grid">
+        
+        <!-- 博客部分 -->
+        <div class="repo-card">
+            <div class="repo-header">
+                <h4 class="repo-title">
+                    <a href="博客/TODO日程看板网页.html">博客 / 工具</a>
+                </h4>
+                <span class="repo-label">Web</span>
+            </div>
+            <p class="repo-desc">包含个人日历和待办事项的可视化看板网页。</p>
+            <div class="file-list">
+                <div class="file-item">
+                    <span class="file-icon">📄</span>
+                    <a href="博客/TODO日程看板网页.html" class="file-link">TODO日程看板网页.html</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 心灵终结INI部分 -->
+        <div class="repo-card">
+            <div class="repo-header">
+                <h4 class="repo-title">
+                    <a href="心灵终结ini/">心灵终结 ini</a>
+                </h4>
+                <span class="repo-label">Config</span>
+            </div>
+            <p class="repo-desc">
+                RA2 心灵终结模组的修改配置。<br>
+                包含：无源超武、特殊部队空降、隐身白杨导弹等。
+            </p>
+            <div class="file-list">
+                <div class="file-item">
+                    <span class="file-icon">⚙️</span>
+                    <a href="心灵终结ini/FS_artmo.ini" class="file-link">FS_artmo.ini</a>
+                </div>
+                <div class="file-item">
+                    <span class="file-icon">⚙️</span>
+                    <a href="心灵终结ini/FS_rulesmo.ini" class="file-link">FS_rulesmo.ini</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 项目说明 -->
+        <div class="repo-card">
+            <div class="repo-header">
+                <h4 class="repo-title">
+                    <a href="README.md">Project Info</a>
+                </h4>
+                <span class="repo-label">Doc</span>
+            </div>
+            <p class="repo-desc">查看本库的详细说明文档。</p>
+            <div class="file-list">
+                <div class="file-item">
+                    <span class="file-icon">📖</span>
+                    <a href="README.md" class="file-link">README.md</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        &copy; 2026 Paper-library Owner. Generated for GitHub Pages.
+    </div>
+</div>
+
+</body>
+</html>
