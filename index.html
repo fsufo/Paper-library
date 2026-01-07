@@ -864,7 +864,7 @@
             const nodeMatches = Graph.graphData().nodes.map(n => {
                 let score = 0, l = (n.label||'').toLowerCase(), i = (n.id||'').toLowerCase();
                 if(l===val) score+=20; else if(l.startsWith(val)) score+=10; else if(l.includes(val)) score+=5;
-                if(i.includes(val)) score+=3;
+                if(i.includes(val)) score+=10; // Increased weight for filename match
                 return { type: 'node', n, score, id: n.id };
             }).filter(o => o.score>0);
 
@@ -885,7 +885,7 @@
                         return `
                         <div class="search-item type-node" data-type="node" data-id="${m.n.id}" data-idx="${idx}">
                             <span class="label">${m.n.label}</span>
-                            <span class="search-tag">${m.n.group||'post'}</span>
+                            <span class="search-tag" style="font-family: monospace; opacity: 0.6;">${m.n.id}</span>
                         </div>`;
                     }
                 }).join('');
