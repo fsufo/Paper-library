@@ -65,6 +65,46 @@
     <div id="article-modal"><div class="close-btn" onclick="closeArticle()">&times;</div><div class="article-content markdown-body" id="markdown-container"></div></div>
     
     <script>
+        // MD 链接劫持系统
+        document.getElementById('markdown-container').addEventListener('click', function(e) {
+            if(e.target.tagName === 'A') {
+                e.preventDefault();
+                const href = e.target.getAttribute('href');
+                
+                // 1. 尝试作为内部链接处理
+                // 去掉路径前缀 ./posts/ 等，保留文件名
+                let targetId = href.split('/').pop(); 
+                // 尝试匹配 graph 中的 ID (通常是 filename.md)
+                const { nodes } = Graph.graphData();
+                let targetNode = nodes.find(n => n.id === targetId || n.id === targetId + '.md');
+                
+                // 2. 如果没找到，尝试模糊匹配 (比如链接写的是 title)
+                if(!targetNode) {
+                    const cleanRef = decodeURIComponent(targetId).replace(/\.md$/i, '').toLowerCase();
+                    targetNode = nodes.find(n => n.label.toLowerCase() === cleanRef || n.id.toLowerCase().includes(cleanRef));
+                }
+
+                if(targetNode) {
+                    console.log('Jumping to internal link:', targetNode.label);
+                    // 关闭当前文章，飞行并在飞行结束后打开新文章
+                    // 稍微缩短一点飞行时间，体验更流畅
+                    const cam = Graph.camera();
+                    const startPos = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
+                    
+                    // 视觉上的“飞越”
+                    closeArticle(); 
+                    
+                    // 重新打开
+                    setTimeout(() => {
+                         jumpToNode(targetNode.id, true);
+                    }, 300); // 等待 modal 关闭动画的一半
+                } else {
+                    // 外部链接，新标签页打开
+                    window.open(href, '_blank');
+                }
+            }
+        });
+
         let Graph, maxDegree = 1;
         let highlightNodes = new Set(), highlightLinks = new Set();
         let hoverNode = null, initialCameraPos = null, starryParticles = null;
@@ -80,11 +120,19 @@
             modal.style.display = 'block';
             modal.offsetHeight; // Force reflow
             modal.classList.add('active');
+            
+            // 打开文章时，让猫猫睡觉，避免遮挡
+            const cat = document.getElementById('helicopter-cat');
+            if(cat) cat.classList.add('hidden');
         }
         function closeArticle() {
             modal.classList.remove('active');
             setTimeout(() => { modal.style.display = 'none'; }, 400);
             if(initialCameraPos && Graph) Graph.cameraPosition(initialCameraPos, {x:0,y:0,z:0}, 1500);
+            
+            // 唤醒猫猫
+            const cat = document.getElementById('helicopter-cat');
+            if(cat) cat.classList.remove('hidden');
         }
         document.addEventListener('keydown', e => { if(e.key==='Escape') closeArticle(); });
 
@@ -150,10 +198,25 @@
                 const degree = (node.neighbors && node.neighbors.length) || 0;
                 let color = getStarColor(degree); node.color = color; 
                 const group = new THREE.Group();
-                const sprite = createGlowSprite(color, 12, degree); group.add(sprite); group.sprite = sprite;
-                const text = new SpriteText(node.label); text.color = '#fff'; text.textHeight = 4; text.position.y = -16;
+                
+                // 星球本体
+                const sprite = createGlowSprite(color, 12, degree); 
+                group.add(sprite); group.sprite = sprite;
+                
+                // 标题 (白色)
+                const text = new SpriteText(node.label); 
+                text.color = '#fff'; text.textHeight = 4; text.position.y = -18;
                 text.material.transparent = true; text.material.opacity = 0; text.material.depthWrite = false;
-                group.add(text); group.text = text; return group;
+                group.add(text); group.text = text; 
+                
+                // Tag 标签 (灰色，小字体)
+                const tagStr = node.group || '';
+                const subText = new SpriteText(tagStr ? `#${tagStr}` : '');
+                subText.color = '#88a'; subText.textHeight = 2.5; subText.position.y = -24;
+                subText.material.transparent = true; subText.material.opacity = 0; subText.material.depthWrite = false;
+                group.add(subText); group.subText = subText;
+
+                return group;
             })
             .onNodeHover(node => {
                 if(modal.classList.contains('active')) return;
@@ -176,16 +239,54 @@
         // 数据处理
         fetch('./posts_data.json').then(r => r.json()).then(data => {
             const map = {};
-            data.nodes.forEach(n => { n.neighbors = []; map[n.id] = n; });
+            const tagGroups = {};
+
+            // 1. 建立索引 & 分组 Tag
+            data.nodes.forEach(n => { 
+                n.neighbors = []; 
+                map[n.id] = n; 
+                
+                // Tag Clustering Logic
+                const tag = n.group || 'default';
+                if(!tagGroups[tag]) tagGroups[tag] = [];
+                tagGroups[tag].push(n);
+            });
+
+            // 2. 为相同 Tag 的节点创建隐形引力链接
+            Object.keys(tagGroups).forEach(tag => {
+                const nodes = tagGroups[tag];
+                if(nodes.length > 1) {
+                    // 让同Tag的所有节点连接到该Tag的第一个节点 (Hub Star Mode)
+                    // 这样会形成一个个以Tag为中心的星团，但不会显式画线
+                    const hub = nodes[0];
+                    for(let i=1; i<nodes.length; i++) {
+                        data.links.push({
+                            source: nodes[i].id,
+                            target: hub.id,
+                            isClusterLink: true // 标记为聚类链
+                        });
+                    }
+                }
+            });
+
+            // 3. 处理实体链接
             data.links.forEach(l => {
+                if(l.isClusterLink) return; // 跳过聚类链的处理
                 const a = map[l.source], b = map[l.target];
                 if(a && b) { a.neighbors.push(b); b.neighbors.push(a); l.sourceNode = a; l.targetNode = b; }
             });
+
             maxDegree = 0; data.nodes.forEach(n => { if(n.neighbors.length > maxDegree) maxDegree = n.neighbors.length; });
             if(maxDegree < 1) maxDegree = 1;
             Graph.graphData(data);
+
+            // 4. 定制聚类力
+            Graph.d3Force('charge').strength(-120); // 增加斥力，防止太密集
+            Graph.d3Force('link').distance(link => link.isClusterLink ? 40 : 100).strength(link => link.isClusterLink ? 0.05 : 1);
+
             setTimeout(() => {
-                Graph.graphData().links.forEach(link => {
+                const validLinks = Graph.graphData().links.filter(l => !l.isClusterLink);
+                validLinks.forEach(link => {
                     if(link.__lineObj && link.sourceNode && link.targetNode) {
                         const c1 = new THREE.Color(link.sourceNode.color), c2 = new THREE.Color(link.targetNode.color);
                         const attr = link.__lineObj.geometry.attributes.color;
@@ -216,14 +317,17 @@
                 const group = node.__threeObj; if (!group) return;
                 const dist = Math.hypot(node.x-camPos.x, node.y-camPos.y, node.z-camPos.z);
                 
-                // 标题 LOD (文章打开时强制隐藏)
+                // 标题 & Tag LOD (文章打开时强制隐藏)
                 let textOp = 0;
                 if(!isModalOpen) {
                     if(isHovering) { if(highlightNodes.has(node)) textOp = 1; }
-                    else { if(dist < 250) textOp = 1 - (dist - 100)/150; }
+                    else { if(dist < 200) textOp = 1 - (dist - 80)/120; }
                     if(textOp<0)textOp=0; if(textOp>1)textOp=1;
                 }
+                // 平滑过渡
                 group.text.material.opacity += (textOp - group.text.material.opacity) * 0.15;
+                // Tag比标题稍微淡一点，或者同步
+                group.subText.material.opacity = group.text.material.opacity * 0.7;
                 
                 // 本体消隐
                 let targetOp = (isHovering && !highlightNodes.has(node)) ? 0.1 : 1.0;
@@ -321,61 +425,72 @@
             if(items[searchIndex]) { items[searchIndex].classList.add('selected'); items[searchIndex].scrollIntoView({block:'nearest'}); }
         }
 
-        // 背景星空 (ShaderMaterial 实现距离剔除)
+        // 背景星空 (修复版：确保可见性 + 距离渐隐)
         setTimeout(() => {
+            // 1. 调整相机视距，确保能看到远处的星星
+            if(Graph.camera()) {
+                Graph.camera().far = 20000;
+                Graph.camera().updateProjectionMatrix();
+            }
+
             const geo = new THREE.BufferGeometry();
-            const pos = [], cols = [], sizes = [];
-            for(let i=0; i<5000; i++) {
-                // 扩大分布范围，避免中心过于拥挤
-                const r = 4000 * Math.pow(Math.random(), 0.5) + 200; 
+            const pos = [], cols = [];
+            for(let i=0; i<6000; i++) {
+                // 生成在 300 - 6000 距离的球壳内
+                const r = 5000 * Math.pow(Math.random(), 0.4) + 300; 
                 const theta = Math.random()*Math.PI*2, phi = Math.acos(2*Math.random()-1);
                 pos.push(r*Math.sin(phi)*Math.cos(theta), r*Math.sin(phi)*Math.sin(theta), r*Math.cos(phi));
-                const c = new THREE.Color().setHSL(Math.random(), 0.5, 0.7); // Higher Saturation
+                
+                // 颜色随机，带一点蓝紫色调
+                const c = new THREE.Color().setHSL(0.6 + Math.random()*0.2, 0.4, 0.8); 
                 cols.push(c.r, c.g, c.b);
-                sizes.push(Math.random() * 2 + 1);
             }
             geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
             geo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-            geo.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
 
-            const mat = new THREE.ShaderMaterial({
-                uniforms: {
-                    pixelRatio: { value: window.devicePixelRatio }
-                },
-                vertexShader: `
-                    attribute float size;
-                    varying vec3 vColor;
-                    void main() {
-                        vColor = color;
-                        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                        float dist = length(mvPosition.xyz);
-                        // Distance Cull: Fade out if < 400, Fade in > 400
-                        float fade = smoothstep(200.0, 600.0, dist); 
-                        gl_PointSize = size * (1000.0 / -mvPosition.z) * fade * 0.8;
-                        gl_Position = projectionMatrix * mvPosition;
-                        if(fade < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0); // Clip
-                    }
-                `,
-                fragmentShader: `
-                    varying vec3 vColor;
-                    void main() {
-                        vec2 xy = gl_PointCoord.xy - vec2(0.5);
-                        float r = length(xy);
-                        if (r > 0.5) discard;
-                        // Soft edge
-                        float glow = 1.0 - (r * 2.0);
-                        glow = pow(glow, 1.5);
-                        gl_FragColor = vec4(vColor, glow * 0.8);
-                    }
-                `,
+            // 使用标准材质 + shader注入，确保最大兼容性
+            const mat = new THREE.PointsMaterial({
+                size: 3,
+                vertexColors: true,
                 transparent: true,
+                opacity: 0.8,
+                sizeAttenuation: true,
                 depthWrite: false,
                 blending: THREE.AdditiveBlending
             });
 
+            // 注入 Shader 逻辑：距离相机近时透明度降低
+            mat.onBeforeCompile = shader => {
+                shader.vertexShader = `
+                    varying float vDist;
+                    ${shader.vertexShader}
+                `.replace(
+                    '#include <begin_vertex>',
+                    `
+                    #include <begin_vertex>
+                    vec4 mvPos = modelViewMatrix * vec4( position, 1.0 );
+                    vDist = length( mvPos.xyz );
+                    `
+                );
+                shader.fragmentShader = `
+                    varying float vDist;
+                    ${shader.fragmentShader}
+                `.replace(
+                    'vec4 diffuseColor = vec4( diffuse, opacity );',
+                    `
+                    // 距离 < 200 渐隐
+                    float fade = smoothstep(100.0, 300.0, vDist);
+                    // 圆形粒子裁切
+                    vec2 xy = gl_PointCoord.xy - vec2(0.5);
+                    float alpha = (1.0 - smoothstep(0.3, 0.5, length(xy))) * fade * opacity;
+                    vec4 diffuseColor = vec4( diffuse, alpha );
+                    `
+                );
+            };
+
             starryParticles = new THREE.Points(geo, mat);
             Graph.scene().add(starryParticles);
-        }, 1000);
+        }, 1500); // 稍微延后一点确保场景加载完成
 
         // 猫猫跟随
         const cat = document.getElementById('helicopter-cat');
