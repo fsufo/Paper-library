@@ -45,8 +45,8 @@
         @keyframes spin { 0% { transform: translateX(-50%) rotateY(0deg); } 100% { transform: translateX(-50%) rotateY(360deg); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
 
-        #article-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 5, 8, 0.96); z-index: 1000; opacity: 0; transition: opacity 0.3s; overflow-y: auto; }
-        #article-modal.active { display: block; opacity: 1; }
+        #article-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 5, 8, 0.96); z-index: 1000; opacity: 0; transition: opacity 0.4s ease-out; overflow-y: auto; }
+        #article-modal.active { opacity: 1; }
         .article-content { max-width: 800px; margin: 60px auto; padding: 40px; background: rgba(20, 25, 35, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
         .close-btn { position: fixed; top: 30px; right: 50px; font-size: 32px; cursor: pointer; color: #888; z-index: 1100; }
         .close-btn:hover { color: #fff; }
@@ -77,39 +77,49 @@
             if(!node) return;
             const content = node.content || (node.data && node.data.content) || "# No Content";
             box.innerHTML = marked.parse(content);
+            modal.style.display = 'block';
+            modal.offsetHeight; // Force reflow
             modal.classList.add('active');
         }
         function closeArticle() {
             modal.classList.remove('active');
+            setTimeout(() => { modal.style.display = 'none'; }, 400);
             if(initialCameraPos && Graph) Graph.cameraPosition(initialCameraPos, {x:0,y:0,z:0}, 1500);
         }
         document.addEventListener('keydown', e => { if(e.key==='Escape') closeArticle(); });
 
-        // 色温算法
+        // 色温算法 (高饱和度)
         function getStarColor(degree) {
             const t = Math.pow(degree / maxDegree, 0.7); 
-            const c1 = new THREE.Color(0xff4433), c2 = new THREE.Color(0xffddaa), c3 = new THREE.Color(0x66ccff);
+            // Saturation Boosted: Red -> Orange -> Cyan/Blue
+            const c1 = new THREE.Color(0xff1133), c2 = new THREE.Color(0xffaa00), c3 = new THREE.Color(0x00ccff);
             if (t < 0.4) return c1.clone().lerp(c2, t * 2.5).getStyle();
             else return c2.clone().lerp(c3, (t - 0.4) * 1.6).getStyle();
         }
 
-        // 视觉生成器
+        // 视觉生成器 (更长更细的十字)
         function createGlowSprite(color, size, degree) {
-            const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128; 
-            const ctx = canvas.getContext('2d'); const c = 64;
-            const grad = ctx.createRadialGradient(c, c, 3, c, c, 20);
-            grad.addColorStop(0, 'rgba(255,255,255,1)'); grad.addColorStop(0.4, color); grad.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(c, c, 20, 0, Math.PI*2); ctx.fill();
+            const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256; 
+            const ctx = canvas.getContext('2d'); const c = 128; // Center
             
+            // Core Glow
+            const grad = ctx.createRadialGradient(c, c, 4, c, c, 40);
+            grad.addColorStop(0, 'rgba(255,255,255,1)'); grad.addColorStop(0.3, color); grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(c, c, 40, 0, Math.PI*2); ctx.fill();
+            
+            // Cross Rays
             ctx.globalCompositeOperation = 'lighter';
-            const rayScale = 0.5 + (degree / maxDegree);
+            const rayScale = 0.8 + (degree / maxDegree) * 0.5;
             const drawRay = (w, h, a) => {
                 const g = ctx.createLinearGradient(0, c-h, 0, c+h);
                 g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(0.5,`rgba(255,255,255,${a})`); g.addColorStop(1,'rgba(0,0,0,0)');
                 ctx.fillStyle = g; ctx.fillRect(c-w/2, c-h, w, h*2);
             };
-            drawRay(0.6, 40*rayScale, 0.9);
-            ctx.save(); ctx.translate(c, c); ctx.rotate(Math.PI/2); ctx.translate(-c, -c); drawRay(0.6, 30*rayScale, 0.9); ctx.restore();
+            // Main Cross (Long)
+            drawRay(1.5, 100*rayScale, 0.9);
+            ctx.save(); ctx.translate(c, c); ctx.rotate(Math.PI/2); ctx.translate(-c, -c); 
+            drawRay(1.5, 80*rayScale, 0.9); 
+            ctx.restore();
             
             const mat = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
             const sprite = new THREE.Sprite(mat);
@@ -163,8 +173,235 @@
                 setTimeout(() => openArticle(node), 1000);
             });
 
-        // 占位符继续写入...
-        // SCRIPT_PART_2_PLACEHOLDER
+        // 数据处理
+        fetch('./posts_data.json').then(r => r.json()).then(data => {
+            const map = {};
+            data.nodes.forEach(n => { n.neighbors = []; map[n.id] = n; });
+            data.links.forEach(l => {
+                const a = map[l.source], b = map[l.target];
+                if(a && b) { a.neighbors.push(b); b.neighbors.push(a); l.sourceNode = a; l.targetNode = b; }
+            });
+            maxDegree = 0; data.nodes.forEach(n => { if(n.neighbors.length > maxDegree) maxDegree = n.neighbors.length; });
+            if(maxDegree < 1) maxDegree = 1;
+            Graph.graphData(data);
+            setTimeout(() => {
+                Graph.graphData().links.forEach(link => {
+                    if(link.__lineObj && link.sourceNode && link.targetNode) {
+                        const c1 = new THREE.Color(link.sourceNode.color), c2 = new THREE.Color(link.targetNode.color);
+                        const attr = link.__lineObj.geometry.attributes.color;
+                        attr.setXYZ(0, c1.r, c1.g, c1.b); attr.setXYZ(1, c1.r, c1.g, c1.b); // Start
+                        attr.setXYZ(3, c2.r, c2.g, c2.b); attr.setXYZ(4, c2.r, c2.g, c2.b); // End
+                        attr.needsUpdate = true;
+                    }
+                });
+            }, 500);
+        });
+
+        // 动画循环
+        function animateFrame() {
+            requestAnimationFrame(animateFrame);
+            const { nodes, links } = Graph.graphData();
+            if(!nodes || nodes.length === 0) return;
+            
+            const camPos = Graph.camera().position;
+            const camDist = Math.hypot(camPos.x, camPos.y, camPos.z);
+            const time = Date.now() * 0.002;
+            const isHovering = (hoverNode !== null);
+
+            // 粒子系统Shader接管了背景消隐，此处仅处理Graph逻辑
+
+            const isModalOpen = modal.classList.contains('active');
+
+            nodes.forEach(node => {
+                const group = node.__threeObj; if (!group) return;
+                const dist = Math.hypot(node.x-camPos.x, node.y-camPos.y, node.z-camPos.z);
+                
+                // 标题 LOD (文章打开时强制隐藏)
+                let textOp = 0;
+                if(!isModalOpen) {
+                    if(isHovering) { if(highlightNodes.has(node)) textOp = 1; }
+                    else { if(dist < 250) textOp = 1 - (dist - 100)/150; }
+                    if(textOp<0)textOp=0; if(textOp>1)textOp=1;
+                }
+                group.text.material.opacity += (textOp - group.text.material.opacity) * 0.15;
+                
+                // 本体消隐
+                let targetOp = (isHovering && !highlightNodes.has(node)) ? 0.1 : 1.0;
+                group.sprite.userData.currentOpacity += (targetOp - group.sprite.userData.currentOpacity) * 0.1;
+                group.sprite.material.opacity = group.sprite.userData.currentOpacity;
+                
+                // 呼吸
+                if(group.sprite.userData.currentOpacity > 0.5) {
+                    const s = 1 + Math.sin(time * group.sprite.userData.speed + group.sprite.userData.phase) * 0.08;
+                    const b = group.sprite.userData.baseScale;
+                    group.sprite.scale.set(b*s, b*s, 1);
+                }
+            });
+            
+            links.forEach(link => {
+                const line = link.__lineObj; if(!line) return;
+                let t = 0.15;
+                if(isHovering) t = highlightLinks.has(link) ? 0.8 : 0.02;
+                line.material.opacity += (t - line.material.opacity) * 0.1;
+            });
+        }
+        animateFrame();
+
+        // 搜索系统
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        let searchIndex = -1;
+
+        function jumpToNode(id, openDoc = false) {
+            const { nodes } = Graph.graphData();
+            const node = nodes.find(n => n.id === id);
+            if(node) {
+                const ratio = 1 + 60/Math.hypot(node.x, node.y, node.z);
+                Graph.cameraPosition({ x: node.x*ratio, y: node.y*ratio, z: node.z*ratio }, node, 800);
+                
+                // Highlight
+                hoverNode = node; highlightNodes.clear(); highlightNodes.add(node);
+                if(node.neighbors) node.neighbors.forEach(n => highlightNodes.add(n));
+                
+                if(openDoc) {
+                    setTimeout(() => openArticle(node), 800);
+                    searchInput.value = ''; searchResults.classList.remove('active');
+                }
+            }
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase().trim();
+            if(!val) { searchResults.classList.remove('active'); return; }
+            
+            const matches = Graph.graphData().nodes.map(n => {
+                let score = 0, l = (n.label||'').toLowerCase(), i = (n.id||'').toLowerCase();
+                if(l===val) score+=20; else if(l.startsWith(val)) score+=10; else if(l.includes(val)) score+=5;
+                if(i.includes(val)) score+=3;
+                return { n, score };
+            }).filter(o => o.score>0).sort((a,b)=>b.score-a.score).slice(0, 10);
+
+            if(matches.length > 0) {
+                searchResults.innerHTML = matches.map((m, idx) => `
+                    <div class="search-item" data-id="${m.n.id}" data-idx="${idx}">
+                        <span class="label">${m.n.label}</span>
+                        <span class="search-tag">${m.n.group||'post'}</span>
+                    </div>`).join('');
+                searchResults.classList.add('active');
+                
+                document.querySelectorAll('.search-item').forEach(el => {
+                    el.addEventListener('mouseenter', () => { // Hover Preview
+                        searchIndex = parseInt(el.dataset.idx);
+                        updateSelection();
+                        jumpToNode(el.dataset.id, false); 
+                    });
+                    el.addEventListener('click', () => jumpToNode(el.dataset.id, true)); // Click Confirm
+                });
+            } else searchResults.classList.remove('active');
+            searchIndex = -1;
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            const items = document.querySelectorAll('.search-item');
+            if(!searchResults.classList.contains('active')) return;
+            if(e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                searchIndex = (e.key === 'ArrowDown') ? (searchIndex+1)%items.length : (searchIndex-1+items.length)%items.length;
+                updateSelection();
+                if(items[searchIndex]) jumpToNode(items[searchIndex].dataset.id, false);
+            } else if(e.key === 'Enter') {
+                e.preventDefault();
+                const target = searchIndex >= 0 ? items[searchIndex] : items[0];
+                if(target) jumpToNode(target.dataset.id, true);
+            }
+        });
+        function updateSelection() {
+            const items = document.querySelectorAll('.search-item');
+            items.forEach(el => el.classList.remove('selected'));
+            if(items[searchIndex]) { items[searchIndex].classList.add('selected'); items[searchIndex].scrollIntoView({block:'nearest'}); }
+        }
+
+        // 背景星空 (ShaderMaterial 实现距离剔除)
+        setTimeout(() => {
+            const geo = new THREE.BufferGeometry();
+            const pos = [], cols = [], sizes = [];
+            for(let i=0; i<5000; i++) {
+                // 扩大分布范围，避免中心过于拥挤
+                const r = 4000 * Math.pow(Math.random(), 0.5) + 200; 
+                const theta = Math.random()*Math.PI*2, phi = Math.acos(2*Math.random()-1);
+                pos.push(r*Math.sin(phi)*Math.cos(theta), r*Math.sin(phi)*Math.sin(theta), r*Math.cos(phi));
+                const c = new THREE.Color().setHSL(Math.random(), 0.5, 0.7); // Higher Saturation
+                cols.push(c.r, c.g, c.b);
+                sizes.push(Math.random() * 2 + 1);
+            }
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+            geo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+            geo.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+
+            const mat = new THREE.ShaderMaterial({
+                uniforms: {
+                    pixelRatio: { value: window.devicePixelRatio }
+                },
+                vertexShader: `
+                    attribute float size;
+                    varying vec3 vColor;
+                    void main() {
+                        vColor = color;
+                        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                        float dist = length(mvPosition.xyz);
+                        // Distance Cull: Fade out if < 400, Fade in > 400
+                        float fade = smoothstep(200.0, 600.0, dist); 
+                        gl_PointSize = size * (1000.0 / -mvPosition.z) * fade * 0.8;
+                        gl_Position = projectionMatrix * mvPosition;
+                        if(fade < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0); // Clip
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vColor;
+                    void main() {
+                        vec2 xy = gl_PointCoord.xy - vec2(0.5);
+                        float r = length(xy);
+                        if (r > 0.5) discard;
+                        // Soft edge
+                        float glow = 1.0 - (r * 2.0);
+                        glow = pow(glow, 1.5);
+                        gl_FragColor = vec4(vColor, glow * 0.8);
+                    }
+                `,
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+            });
+
+            starryParticles = new THREE.Points(geo, mat);
+            Graph.scene().add(starryParticles);
+        }, 1000);
+
+        // 猫猫跟随
+        const cat = document.getElementById('helicopter-cat');
+        if(cat) {
+            const body = cat.querySelector('.cat-body-container');
+            const lEye = cat.querySelector('.eye.left'), rEye = cat.querySelector('.eye.right'), zzz = document.getElementById('zzz-bubble');
+            let mx=window.innerWidth/2, my=window.innerHeight/2, cx=mx, cy=my, rot=0, sleeping=false, lastT=Date.now();
+            document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; lastT=Date.now(); if(sleeping)wake(); });
+            
+            function wake() { sleeping=false; lEye.classList.remove('closed'); rEye.classList.remove('closed'); zzz.classList.remove('active'); blink(); }
+            function sleep() { sleeping=true; lEye.classList.add('closed'); rEye.classList.add('closed'); zzz.classList.add('active'); }
+            function blink() { if(sleeping)return; lEye.classList.add('closed'); rEye.classList.add('closed'); setTimeout(()=>{if(!sleeping){lEye.classList.remove('closed');rEye.classList.remove('closed')}}, 200); setTimeout(blink, 2000+Math.random()*3000); }
+            setTimeout(blink,2000);
+
+            function loop() {
+                if(!sleeping && Date.now()-lastT>5000) sleep();
+                cx += (mx+20-cx)*0.08; cy += (my+20-cy)*0.08;
+                let vx = (mx+20-cx), tr = Math.max(-20, Math.min(20, vx*-1.5));
+                rot += (tr-rot)*0.1;
+                cat.style.left = cx+'px'; cat.style.top = cy+'px';
+                body.style.transform = `rotate(${rot}deg)`;
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+        window.onresize = () => Graph.width(window.innerWidth).height(window.innerHeight);
     </script>
 </body>
 </html>
