@@ -470,7 +470,9 @@
                 // 反向链接完全透明，不干扰视觉，只提供粒子路径
                 const opacity = link.isReverse ? 0 : 0.15;
                 const mat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: opacity });
-                const line = new THREE.Line(geo, mat); link.__lineObj = line; return line;
+                const line = new THREE.Line(geo, mat); 
+                line.frustumCulled = false; // 关键修复：防止近距离观察时连线因视锥体误判而消失
+                link.__lineObj = line; return line;
             })
             .linkPositionUpdate((line, { start, end }) => {
                 const p = line.geometry.attributes.position.array;
