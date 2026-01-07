@@ -10,7 +10,16 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; background-color: #000; color: #fff; font-family: 'Segoe UI', sans-serif; cursor: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 5L12 21L15.5 13.5L23 10L5 5Z" fill="white" stroke="%23333" stroke-width="2.5" stroke-linejoin="round" style="filter:drop-shadow(0px 2px 3px rgba(0,0,0,0.3));"/></svg>') 6 6, auto; }
+        /* 强制全局光标为自定义猫猫样式，覆盖默认 */
+        :root {
+            --custom-cursor: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNSA1TDEyIDIxTDE1LjUgMTMuNUwyMyAxMEw1IDVaIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3R5bGU9ImZpbHRlcjpkcm9wLXNoYWRvdygwcHggMnB4IDNweCByZ2JhKDAsMCwwLDAuMykpOyIvPjwvc3ZnPg==') 6 6, auto;
+        }
+        
+        *, html, body, canvas, a, button, .clickable, .tag-capsule, .search-item {
+            cursor: var(--custom-cursor) !important;
+        }
+
+        body { margin: 0; padding: 0; overflow: hidden; background-color: #000; color: #fff; font-family: 'Segoe UI', sans-serif; }
         #3d-graph { width: 100vw; height: 100vh; position: absolute; z-index: 1; }
         
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -28,9 +37,11 @@
         .search-item:hover, .search-item.selected { background: rgba(30, 100, 200, 0.3); color: #fff; }
         .search-tag { font-size: 11px; color: #88a; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; }
 
-        #helicopter-cat { position: fixed; pointer-events: none; z-index: 9999; transform: scale(0.65); transform-origin: top left; width: 32px; height: 24px; top: -100px; left: -100px; }
+#helicopter-cat { position: fixed; pointer-events: none; z-index: 9999; transform: scale(0.65); transform-origin: top left; width: 32px; height: 24px; top: -100px; left: -100px; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+#helicopter-cat.excited .propeller { animation-duration: 0.04s; }
+        #helicopter-cat.excited .cat-body { box-shadow: 0 0 25px rgba(255, 220, 100, 0.8); background: #fffdf0; }
         .cat-body-container { width: 100%; height: 100%; position: relative; animation: float 2.5s ease-in-out infinite; }
-        .cat-body { width: 32px; height: 22px; background: #fff; border-radius: 16px 16px 12px 12px; box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); position: absolute; bottom: 0; display: flex; justify-content: center; align-items: center; }
+        .cat-body { width: 32px; height: 22px; background: #fff; border-radius: 16px 16px 12px 12px; box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); position: absolute; bottom: 0; display: flex; justify-content: center; align-items: center; transition: all 0.3s; }
         .cat-ear { position: absolute; top: -4px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 10px solid #fff; }
         .cat-ear.left { left: 3px; transform: rotate(-15deg); }
         .cat-ear.right { right: 3px; transform: rotate(15deg); }
@@ -169,9 +180,7 @@
         // 统一的高亮模式设置函数
         function setHighlightMode(node) {
             hoverNode = node || null; 
-            // Only set pointer cursor if we are highlighting a specific node (and not just clearing)
-            // Note: Real-time cursor update is handled mainly by onNodeHover for the graph
-            if(!isMouseOverSearch()) document.body.style.cursor = node ? 'pointer' : null;
+            updateCatExcitement(); // 触发全状态检查
             
             highlightNodes.clear(); highlightLinks.clear();
             
@@ -1166,13 +1175,55 @@
             Graph.scene().add(starryParticles);
         }, 1500); // 稍微延后一点确保场景加载完成
 
-        // 猫猫跟随
+        // 全局交互状态管理
+        let isInteractionHover = false;
+        
+        // 统一检测猫猫是否应该兴奋
+        function updateCatExcitement() {
+            const cat = document.getElementById('helicopter-cat');
+            if(!cat) return;
+            // 只要有 hoveredNode 或者 鼠标在 interactive 元素上，就兴奋
+            if(hoverNode || isInteractionHover) {
+                cat.classList.add('excited');
+            } else {
+                cat.classList.remove('excited');
+            }
+        }
+
+        // 监听 DOM 元素交互 (Markdown 链接, 按钮, 关闭X 等)
+        const interactiveSelectors = 'a, button, .close-btn, .tag-capsule, .search-item, .clickable, input, .cat-interactive';
+        document.body.addEventListener('mouseover', (e) => {
+            if(e.target.closest(interactiveSelectors)) {
+                isInteractionHover = true;
+                updateCatExcitement();
+            }
+        });
+        document.body.addEventListener('mouseout', (e) => {
+            // 稍微延迟判断，防止在相邻元素移动时闪烁，或者检查 relatedTarget
+            if(!e.relatedTarget || !e.relatedTarget.closest(interactiveSelectors)) {
+                isInteractionHover = false;
+                updateCatExcitement();
+            }
+        });
+
+        // 猫猫跟随系统 (作为伙伴跟随在鼠标右下角)
         const cat = document.getElementById('helicopter-cat');
         if(cat) {
             const body = cat.querySelector('.cat-body-container');
             const lEye = cat.querySelector('.eye.left'), rEye = cat.querySelector('.eye.right'), zzz = document.getElementById('zzz-bubble');
-            let mx=window.innerWidth/2, my=window.innerHeight/2, cx=mx, cy=my, rot=0, sleeping=false, lastT=Date.now();
-            document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; lastT=Date.now(); if(sleeping)wake(); });
+            
+            // mx, my: 鼠标真实位置
+            // cx, cy: 猫猫当前位置 (Lerped)
+            let mx=window.innerWidth/2, my=window.innerHeight/2;
+            let cx=mx, cy=my;
+            let rot=0, sleeping=false, lastT=Date.now();
+            
+            document.addEventListener('mousemove', e=>{ 
+                mx = e.clientX; 
+                my = e.clientY; 
+                lastT = Date.now(); 
+                if(sleeping) wake(); 
+            });
             
             function wake() { sleeping=false; lEye.classList.remove('closed'); rEye.classList.remove('closed'); zzz.classList.remove('active'); blink(); }
             function sleep() { sleeping=true; lEye.classList.add('closed'); rEye.classList.add('closed'); zzz.classList.add('active'); }
@@ -1181,11 +1232,31 @@
 
             function loop() {
                 if(!sleeping && Date.now()-lastT>5000) sleep();
-                cx += (mx+20-cx)*0.08; cy += (my+20-cy)*0.08;
-                let vx = (mx+20-cx), tr = Math.max(-20, Math.min(20, vx*-1.5));
-                rot += (tr-rot)*0.1;
-                cat.style.left = cx+'px'; cat.style.top = cy+'px';
+                
+                // 目标位置：鼠标右下角 24px 处
+                const targetX = mx + 24;
+                const targetY = my + 24;
+
+                // 简单的 Lerp 跟随，系数 0.12 比较跟手但有弹性
+                cx += (targetX - cx) * 0.12;
+                cy += (targetY - cy) * 0.12;
+
+                cat.style.left = cx + 'px';
+                cat.style.top = cy + 'px';
+                
+                // 根据水平移动速度计算倾斜
+                // 此时 cx 在追赶 targetX(即 mx), 所以 vx = (mx - cx) 也可以
+                // 但实际上直接用当前帧位移更准确: velocity = current_cx - prev_cx (这里简化处理)
+                let vx = (targetX - cx); 
+                
+                // 限制倾斜角度
+                let tr = Math.max(-25, Math.min(25, vx * -1.5));
+                
+                rot += (tr - rot) * 0.1;
+                
+                // 将旋转应用在内部容器
                 body.style.transform = `rotate(${rot}deg)`;
+                
                 requestAnimationFrame(loop);
             }
             loop();
