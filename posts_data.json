@@ -116,7 +116,7 @@
       "id": "post_5",
       "label": "Dreaming about Design 5",
       "group": "design",
-      "content": "# Dreaming about Design 5\n\n这里是关于 **Design** 的一些想法。\n\n## 思考\n在这个充满熵增的宇宙中，我们需要更多的 **Quantum**。\n\n### 关联文章\n- 参考资料：[[post_1]]\n- 延伸阅读：[post_2.md 的详情](post_2.md)\n- 参考资料：[[post_3]]\n\n> 这是一个自动生成的测试片段。\n",
+      "content": "# Dreaming about Design 5\n\n这里是关于 **Design** 的一些想法。\n\n## 思考\n\n在这个充满熵增的宇宙中，我们需要更多的 **Quantum**。\n\n### 关联文章\n\n- 参考资料：[[post_1]]\n- 延伸阅读：[post_2.md 的详情](post_2.md)\n- 参考资料：[[post_3]]\n\n> 这是一个自动生成的测试片段。\n",
       "val": 1
     },
     {
@@ -150,6 +150,10 @@
   ],
   "links": [
     {
+      "source": "post_1",
+      "target": "hello-world"
+    },
+    {
       "source": "post_10",
       "target": "hello-world"
     },
@@ -160,6 +164,18 @@
     {
       "source": "post_10",
       "target": "post_4"
+    },
+    {
+      "source": "post_11",
+      "target": "post_3"
+    },
+    {
+      "source": "post_11",
+      "target": "hello-world"
+    },
+    {
+      "source": "post_11",
+      "target": "post_1"
     },
     {
       "source": "post_12",
@@ -174,6 +190,10 @@
       "target": "post_8"
     },
     {
+      "source": "post_14",
+      "target": "post_9"
+    },
+    {
       "source": "post_15",
       "target": "post_8"
     },
@@ -186,16 +206,48 @@
       "target": "post_10"
     },
     {
+      "source": "post_16",
+      "target": "post_5"
+    },
+    {
+      "source": "post_17",
+      "target": "post_16"
+    },
+    {
+      "source": "post_17",
+      "target": "post_9"
+    },
+    {
+      "source": "post_17",
+      "target": "post_14"
+    },
+    {
       "source": "post_18",
       "target": "post_7"
+    },
+    {
+      "source": "post_18",
+      "target": "post_15"
+    },
+    {
+      "source": "post_19",
+      "target": "hello-world"
     },
     {
       "source": "post_2",
       "target": "post_1"
     },
     {
+      "source": "post_2",
+      "target": "hello-world"
+    },
+    {
       "source": "post_20",
       "target": "post_16"
+    },
+    {
+      "source": "post_20",
+      "target": "post_11"
     },
     {
       "source": "post_3",
@@ -206,8 +258,20 @@
       "target": "hello-world"
     },
     {
+      "source": "post_3",
+      "target": "post_2"
+    },
+    {
       "source": "post_4",
       "target": "post_1"
+    },
+    {
+      "source": "post_4",
+      "target": "post_3"
+    },
+    {
+      "source": "post_4",
+      "target": "hello-world"
     },
     {
       "source": "post_5",
@@ -216,6 +280,10 @@
     {
       "source": "post_5",
       "target": "post_3"
+    },
+    {
+      "source": "post_5",
+      "target": "post_2"
     },
     {
       "source": "post_6",
@@ -248,6 +316,14 @@
     {
       "source": "post_9",
       "target": "post_6"
+    },
+    {
+      "source": "post_9",
+      "target": "post_3"
+    },
+    {
+      "source": "post_9",
+      "target": "post_4"
     }
   ]
 }

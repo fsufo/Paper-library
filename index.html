@@ -227,6 +227,13 @@
                     if(node.neighbors) node.neighbors.forEach(n => highlightNodes.add(n));
                     Graph.graphData().links.forEach(l => { if (l.source.id === node.id || l.target.id === node.id) highlightLinks.add(l); });
                 }
+
+                // 动态更新粒子流向
+                Graph.linkDirectionalParticles(link => highlightLinks.has(link) ? 3 : 0);
+                // 粒子超微小 (0.6)，颜色强制跟随源星球颜色
+                Graph.linkDirectionalParticleWidth(link => highlightLinks.has(link) ? 0.6 : 0);
+                Graph.linkDirectionalParticleColor(link => link.sourceNode ? link.sourceNode.color : '#ffffff'); 
+                Graph.linkDirectionalParticleSpeed(link => 0.005);
             })
             .onNodeClick(node => {
                 if(!node) return;

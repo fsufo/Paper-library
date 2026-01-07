@@ -68,14 +68,35 @@ def build_data():
     for node in nodes:
         content_lower = node['content'].lower()
         # 简单优化：不需要每次都 compile
+        
+        # 1. Wiki Links [[Target]]
         for match in link_pattern_wiki.findall(node['content']):
             target = match.split('|')[0].strip()
             for k, v in id_map.items():
                 if k.lower() == target.lower() or k.replace('.md','').lower() == target.lower():
                     if v != node['id']: links.append({"source": node['id'], "target": v})
                     break
+        
+        # 2. Markdown Links [Title](./Target.md)
+        for match in link_pattern_md.findall(node['content']):
+            # match is the URL part, e.g. "./posts/Target.md" or "Target.md"
+            target_filename = match.split('/')[-1] # Extract filename
+            target_id = os.path.splitext(target_filename)[0] # Remove extension
+            
+            # SimpleID Match
+            if target_id in id_map and id_map[target_id] != node['id']:
+                links.append({"source": node['id'], "target": id_map[target_id]})
 
-    data = {"nodes": nodes, "links": links}
+    # Remove duplicates
+    unique_links = []
+    seen = set()
+    for l in links:
+        key = f"{l['source']}->{l['target']}"
+        if key not in seen:
+            seen.add(key)
+            unique_links.append(l)
+
+    data = {"nodes": nodes, "links": unique_links}
     
     # 写入重试
     for i in range(3):
