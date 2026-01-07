@@ -56,6 +56,55 @@
         .markdown-body code { background: rgba(110, 118, 129, 0.4); padding: 0.2em 0.4em; border-radius: 6px; font-family: monospace; }
         .markdown-body pre { background: #161b22; padding: 16px; border-radius: 6px; overflow: auto; }
         .markdown-body img { max-width: 100%; border-radius: 6px; }
+
+        /* Tag Capsule Styles */
+        #selected-tags-container {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            width: 100%;
+        }
+        .tag-capsule {
+            background: rgba(100, 200, 255, 0.2);
+            border: 1px solid rgba(100, 200, 255, 0.4);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            color: #ade;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .tag-capsule:hover {
+            background: rgba(100, 200, 255, 0.4);
+            color: #fff;
+        }
+        .tag-capsule .remove-btn {
+            font-weight: bold;
+            color: rgba(255,255,255,0.6);
+            margin-left: 2px;
+        }
+        .tag-capsule .remove-btn:hover {
+            color: #fff;
+        }
+        
+        /* Search Dropdown Tag Style */
+        .search-item.type-tag .label-container {
+            display: flex;
+            align-items: center;
+        }
+        .search-item.type-tag .tag-capsule-preview {
+            background: rgba(100, 200, 255, 0.2);
+            border: 1px solid rgba(100, 200, 255, 0.3);
+            border-radius: 12px;
+            padding: 1px 8px;
+            color: #ade;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -94,11 +143,20 @@
         <div id="info-tag" style="font-size: 14px; color: #88ccff; margin-top: 4px; font-family: monospace;"></div>
     </div>
 
-    <div class="search-wrapper"><div id="search-container"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search universe..." autocomplete="off"/></div><div id="search-results"></div></div>
+    <div class="search-wrapper">
+        <div id="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search universe..." autocomplete="off"/>
+        </div>
+        <div id="selected-tags-container"></div>
+        <div id="search-results"></div>
+    </div>
     <div id="article-modal"><div class="close-btn" onclick="closeArticle()">&times;</div><div class="article-content markdown-body" id="markdown-container"></div></div>
     
     <script>
         let gData = null; // Store full data globally
+        let allTags = new Set(); // Global Tag Registry
+        let selectedTags = new Set(); // Current Tag Filter
         let activeLookup = {}; // 独立的全局查找表，解耦 Node 对象
 
         function updateGraphFilter() {
@@ -107,9 +165,29 @@
             const showWiki = document.getElementById('chk-wiki').checked;
             const showMd = document.getElementById('chk-md').checked;
             const enableGravity = document.getElementById('chk-gravity').checked;
+
+            // 0. Filter Nodes by Tags (Intersectional)
+            let filteredNodes = gData.nodes;
+            if (selectedTags.size > 0) {
+                filteredNodes = gData.nodes.filter(n => {
+                     // Get node tags
+                     const nodeTags = (n.all_tags && n.all_tags.length > 0) ? n.all_tags : [n.group || 'default'];
+                     // Check intersection: Node must have ALL selected tags
+                     for (let t of selectedTags) {
+                         if (!nodeTags.includes(t)) return false;
+                     }
+                     return true;
+                });
+            }
+            const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
             
             // 1. Filter valid links
             let filteredLinks = gData.links.filter(l => {
+                // Ensure both ends exist in filtered nodes
+                const sId = (typeof l.source === 'object') ? l.source.id : l.source;
+                const tId = (typeof l.target === 'object') ? l.target.id : l.target;
+                if (!filteredNodeIds.has(sId) || !filteredNodeIds.has(tId)) return false;
+
                 // Keep cluster links only if gravity is enabled
                 if (l.isClusterLink) return enableGravity;
                 
@@ -121,7 +199,7 @@
 
             // 2. Clone structure 
             Graph.graphData({
-                nodes: gData.nodes,
+                nodes: filteredNodes,
                 links: filteredLinks
             });
 
@@ -450,6 +528,7 @@
         fetch('./posts_data.json').then(r => r.json()).then(data => {
             const map = {};
             const tagGroups = {};
+            allTags.clear();
 
             // 1. 建立索引 & 分组 Tag (支持多标签聚类)
             data.nodes.forEach(n => { 
@@ -461,6 +540,7 @@
                 const tagsToProcess = (n.all_tags && n.all_tags.length > 0) ? n.all_tags : [n.group || 'default'];
                 
                 tagsToProcess.forEach(tag => {
+                    allTags.add(tag); // Collect to global set
                     if(!tagGroups[tag]) tagGroups[tag] = [];
                     tagGroups[tag].push(n);
                 });
@@ -736,32 +816,92 @@
             }
         }
 
+        // Tag Mangement System
+        function toggleTag(tagName) {
+            if (selectedTags.has(tagName)) {
+                selectedTags.delete(tagName);
+            } else {
+                selectedTags.add(tagName);
+            }
+            renderSelectedTags();
+            updateGraphFilter();
+            searchInput.value = ''; 
+            searchResults.classList.remove('active');
+            searchInput.focus();
+        }
+
+        function removeTag(tagName) {
+            selectedTags.delete(tagName);
+            renderSelectedTags();
+            updateGraphFilter();
+        }
+
+        function renderSelectedTags() {
+            const container = document.getElementById('selected-tags-container');
+            container.innerHTML = Array.from(selectedTags).map(tag => `
+                <div class="tag-capsule" onclick="removeTag('${tag}')">
+                    <span>#${tag}</span>
+                    <span class="remove-btn">&times;</span>
+                </div>
+            `).join('');
+        }
+
         searchInput.addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase().trim();
             if(!val) { searchResults.classList.remove('active'); return; }
             
-            const matches = Graph.graphData().nodes.map(n => {
+            // 1. Search Tags
+            const validTags = Array.from(allTags).filter(t => 
+                t.toLowerCase().includes(val) && !selectedTags.has(t)
+            ).map(t => ({ type: 'tag', label: t, id: `TAG_${t}`, score: 30 })); // High priority for tags
+
+            // 2. Search Nodes (Only in current graph view)
+            const nodeMatches = Graph.graphData().nodes.map(n => {
                 let score = 0, l = (n.label||'').toLowerCase(), i = (n.id||'').toLowerCase();
                 if(l===val) score+=20; else if(l.startsWith(val)) score+=10; else if(l.includes(val)) score+=5;
                 if(i.includes(val)) score+=3;
-                return { n, score };
-            }).filter(o => o.score>0).sort((a,b)=>b.score-a.score).slice(0, 10);
+                return { type: 'node', n, score, id: n.id };
+            }).filter(o => o.score>0);
 
-            if(matches.length > 0) {
-                searchResults.innerHTML = matches.map((m, idx) => `
-                    <div class="search-item" data-id="${m.n.id}" data-idx="${idx}">
-                        <span class="label">${m.n.label}</span>
-                        <span class="search-tag">${m.n.group||'post'}</span>
-                    </div>`).join('');
+            // Merge & Sort
+            const allMatches = [...validTags, ...nodeMatches].sort((a,b)=>b.score-a.score).slice(0, 10);
+
+            if(allMatches.length > 0) {
+                searchResults.innerHTML = allMatches.map((m, idx) => {
+                    if (m.type === 'tag') {
+                        return `
+                        <div class="search-item type-tag" data-type="tag" data-val="${m.label}" data-idx="${idx}">
+                            <div class="label-container">
+                                <span class="tag-capsule-preview">#${m.label}</span>
+                            </div>
+                            <span class="search-tag-indicator">Tag Filter</span>
+                        </div>`;
+                    } else {
+                        return `
+                        <div class="search-item type-node" data-type="node" data-id="${m.n.id}" data-idx="${idx}">
+                            <span class="label">${m.n.label}</span>
+                            <span class="search-tag">${m.n.group||'post'}</span>
+                        </div>`;
+                    }
+                }).join('');
                 searchResults.classList.add('active');
                 
                 document.querySelectorAll('.search-item').forEach(el => {
                     el.addEventListener('mouseenter', () => { // Hover Preview
                         searchIndex = parseInt(el.dataset.idx);
                         updateSelection();
-                        jumpToNode(el.dataset.id, false); 
+                        // Only jump if it's a node
+                        if (el.dataset.type === 'node') {
+                             jumpToNode(el.dataset.id, false); 
+                        }
                     });
-                    el.addEventListener('click', () => jumpToNode(el.dataset.id, true)); // Click Confirm
+                    el.addEventListener('click', () => {
+                        if (el.dataset.type === 'tag') {
+                            toggleTag(el.dataset.val);
+                        } else {
+                            jumpToNode(el.dataset.id, true);
+                        }
+                    }); // Click Confirm
                 });
             } else searchResults.classList.remove('active');
             searchIndex = -1;
@@ -774,11 +914,20 @@
                 e.preventDefault();
                 searchIndex = (e.key === 'ArrowDown') ? (searchIndex+1)%items.length : (searchIndex-1+items.length)%items.length;
                 updateSelection();
-                if(items[searchIndex]) jumpToNode(items[searchIndex].dataset.id, false);
+                // Preview logic on arrow keys
+                if(items[searchIndex] && items[searchIndex].dataset.type === 'node') {
+                    jumpToNode(items[searchIndex].dataset.id, false);
+                }
             } else if(e.key === 'Enter') {
                 e.preventDefault();
                 const target = searchIndex >= 0 ? items[searchIndex] : items[0];
-                if(target) jumpToNode(target.dataset.id, true);
+                if(target) {
+                    if (target.dataset.type === 'tag') {
+                        toggleTag(target.dataset.val);
+                    } else {
+                        jumpToNode(target.dataset.id, true);
+                    }
+                }
             }
         });
         function updateSelection() {
