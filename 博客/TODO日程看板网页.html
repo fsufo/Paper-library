@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的日程看板</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --column-bg: #161b22;
+            --card-bg: #21262d;
+            --text-color: #c9d1d9;
+            --text-muted: #8b949e;
+            --btn-color: #1f6feb;
+            --btn-hover: #388bfd;
+            --border-color: #30363d;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+            zoom: 0.9; /* 整体缩小 10% */
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .file-controls {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: var(--column-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s;
+        }
+
+        .file-controls.drag-over {
+            background-color: rgba(31, 111, 235, 0.1);
+            border-color: #1f6feb;
+        }
+
+        .file-btn {
+            background-color: #238636; /* GitHub Green */
+            color: white;
+            border: 1px solid rgba(240,246,252,0.1);
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .file-btn:hover {
+            background-color: #2ea043;
+        }
+
+        .save-status-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #30363d;
+            margin-right: 5px;
+            border: 1px solid var(--bg-color);
+        }
+
+        .status-indicator.saved { background-color: #238636; box-shadow: 0 0 5px #238636; }
+        .status-indicator.pending { background-color: #d29922; box-shadow: 0 0 5px #d29922; }
+        .status-indicator.error { background-color: #f85149; }
+
+        .manual-save-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-color);
+            margin-top: 4px;
+            transition: 0.2s;
+        }
+        
+        .manual-save-btn:hover {
+            background-color: var(--border-color);
+            color: #58a6ff;
+        }
+
+        .board {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            flex-grow: 1;
+            align-items: flex-start;
+            padding-bottom: 10px;
+        }
+
+        /* 响应式布局：当屏幕宽度小于 950px 时，切换为垂直堆叠 */
+        @media (max-width: 950px) {
+            .board {
+                flex-direction: column;
+                align-items: stretch;
+                overflow-x: hidden; /* 隐藏水平滚动条 */
+                overflow-y: auto;   /* 允许垂直滚动 */
+            }
+
+            .column {
+                width: 100%;      /* 占满宽度 */
+                min-width: 0;     /* 允许缩小 */
+                max-height: none; /* 取消高度限制，随内容撑开 */
+                margin-bottom: 20px;
+            }
+
+            .task-list {
+                min-height: 50px; /* 稍微减小最小高度 */
+                max-height: 300px; /* 限制每个列表的最大高度，避免太长 */
+            }
+        }
+
+        /* Scrollbar styling for dark mode */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6e7681;
+        }
+
+        .column {
+            background-color: var(--column-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            width: 300px;
+            min-width: 300px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
+        }
+
+        .column-header {
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding: 0 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-color);
+        }
+        
+        .column-header span {
+            background-color: rgba(110, 118, 129, 0.4);
+            color: var(--text-color);
+            border-radius: 2em;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .task-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            overflow-x: hidden; /* 防止水平滚动条出现 */
+            min-height: 100px;
+            padding: 4px 10px 10px 10px; /* 增加内边距，为卡片放大留出空间 */
+        }
+
+        .task-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 0 rgba(27,31,35,0.04);
+            cursor: grab;
+            position: relative;
+            transition: 0.2s;
+            color: var(--text-color);
+            word-wrap: break-word;
+        }
+
+        .task-card:hover {
+            background-color: #2c333e;
+            border-color: #8b949e;
+        }
+
+        .task-card:active {
+            cursor: grabbing;
+            transform: rotate(1deg);
+        }
+
+        .task-card .delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: none;
+            padding: 0;
+            border-radius: 50%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .task-card:hover .delete-btn {
+            display: flex;
+        }
+
+        /* 长按删除的 SVG 动画样式 */
+        .delete-btn svg {
+            width: 24px;
+            height: 24px;
+            transform: rotate(-90deg);
+        }
+
+        .delete-btn circle {
+            fill: none;
+            stroke-width: 2;
+            stroke: #f85149;
+            stroke-dasharray: 70; /* 圆周长 */
+            stroke-dashoffset: 70; /* 初始隐藏 */
+            transition: stroke-dashoffset 0s linear; /* 默认无过渡 */
+        }
+
+        .delete-btn.pressing circle {
+            stroke-dashoffset: 0; /* 填满 */
+            transition: stroke-dashoffset 0.4s linear; /* 0.4秒填满 */
+        }
+
+        .delete-btn .x-icon {
+            position: absolute;
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1;
+            pointer-events: none;
+        }
+        
+        .delete-btn:hover .x-icon {
+            color: #f85149;
+        }
+
+        /* 编辑模式样式 */
+        .task-card textarea.edit-mode {
+            width: 100%;
+            background: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid #58a6ff;
+            border-radius: 4px;
+            padding: 4px;
+            font-family: inherit;
+            font-size: inherit;
+            resize: none;
+            box-sizing: border-box;
+            outline: none;
+            display: block;
+        }
+
+        /* 拖拽占位符样式 */
+        .drop-placeholder {
+            height: 4px;
+            background-color: #1f6feb;
+            border-radius: 2px;
+            margin: 4px 0;
+            box-shadow: 0 0 4px #1f6feb;
+            pointer-events: none; /* 不干扰鼠标事件 */
+        }
+
+        .add-task-container {
+            margin-top: 8px;
+        }
+
+        .add-btn {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            width: 100%;
+            text-align: left;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .add-btn:hover {
+            background-color: rgba(177, 186, 196, 0.12);
+            color: var(--text-color);
+        }
+
+        .input-group {
+            display: none;
+        }
+
+        .input-group textarea {
+            width: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+            margin-bottom: 8px;
+            outline: none;
+        }
+        
+        .input-group textarea:focus {
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+        }
+
+        .input-group .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .save-btn {
+            background-color: var(--btn-color);
+            color: white;
+            border: 1px solid rgba(240,246,252,0.1);
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .save-btn:hover {
+            background-color: var(--btn-hover);
+        }
+
+        .cancel-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+        }
+        
+        .cancel-btn:hover {
+            color: var(--text-color);
+        }
+
+        /* Drag and Drop Styles */
+        .task-card.dragging {
+            opacity: 0.4;
+            border: 1px dashed var(--text-muted);
+            background-color: var(--bg-color);
+            transform: scale(0.95); /* 拖拽时稍微缩小 */
+        }
+
+        .column.drag-over {
+            background-color: #1c2128;
+            border-color: #58a6ff;
+        }
+
+        /* Q弹动画：卡片插入 */
+        @keyframes elastic-drop {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            70% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        .task-card.animate-drop {
+            animation: elastic-drop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            z-index: 10; /* 确保动画时在最上层 */
+            position: relative;
+        }
+
+        /* Q弹删除动画 */
+        @keyframes elastic-remove {
+            0% { transform: scale(1); opacity: 1; }
+            40% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; margin-top: -50px; } /* 负边距让下方卡片上移 */
+        }
+
+        .task-card.animate-delete {
+            animation: elastic-remove 0.4s ease-in forwards;
+            z-index: 10;
+            pointer-events: none; /* 动画期间禁止交互 */
+        }
+
+        /* 占位符动画 */
+        .drop-placeholder {
+            height: 4px;
+            background-color: #1f6feb;
+            border-radius: 2px;
+            margin: 4px 0;
+            box-shadow: 0 0 8px rgba(31, 111, 235, 0.8);
+            animation: placeholder-pulse 1s infinite alternate;
+        }
+
+        @keyframes placeholder-pulse {
+            from { opacity: 0.6; transform: scaleX(0.95); }
+            to { opacity: 1; transform: scaleX(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📅 我的日程看板</h1>
+
+    <div class="file-controls" id="drop-zone">
+        <button class="file-btn" onclick="openFile()">📂 关联 Markdown 文件</button>
+        <span style="font-size: 12px; color: var(--text-muted);">或将 .md 文件拖入此处</span>
+        
+        <div class="save-status-container" id="status-container" style="display:none;">
+            <div>
+                <span class="status-indicator saved" id="status-dot"></span>
+                <span id="file-status-text">已同步</span>
+            </div>
+            <button class="manual-save-btn" onclick="forceSave()">💾 立即保存到文件</button>
+        </div>
+    </div>
+
+    <div class="board">
+        <!-- To Do Column -->
+        <div class="column" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+            <div class="column-header">📝 待办事项 (To Do) <span id="count-todo">0</span></div>
+            <div class="task-list" id="list-todo">
+                <!-- Tasks will be injected here -->
+            </div>
+            <div class="add-task-container">
+                <button class="add-btn" onclick="showInput('todo')">+ 添加卡片</button>
+                <div class="input-group" id="input-todo">
+                    <textarea placeholder="为此卡片输入标题..." id="text-todo"></textarea>
+                    <div class="actions">
+                        <button class="save-btn" onclick="addTask('todo')">添加卡片</button>
+                        <button class="cancel-btn" onclick="hideInput('todo')">&times;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- In Progress Column -->
+        <div class="column" id="inprogress" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+            <div class="column-header">🚧 进行中 (In Progress) <span id="count-inprogress">0</span></div>
+            <div class="task-list" id="list-inprogress"></div>
+            <div class="add-task-container">
+                <button class="add-btn" onclick="showInput('inprogress')">+ 添加卡片</button>
+                <div class="input-group" id="input-inprogress">
+                    <textarea placeholder="为此卡片输入标题..." id="text-inprogress"></textarea>
+                    <div class="actions">
+                        <button class="save-btn" onclick="addTask('inprogress')">添加卡片</button>
+                        <button class="cancel-btn" onclick="hideInput('inprogress')">&times;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Done Column -->
+        <div class="column" id="done" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+            <div class="column-header">✅ 已完成 (Done) <span id="count-done">0</span></div>
+            <div class="task-list" id="list-done"></div>
+            <div class="add-task-container">
+                <button class="add-btn" onclick="showInput('done')">+ 添加卡片</button>
+                <div class="input-group" id="input-done">
+                    <textarea placeholder="为此卡片输入标题..." id="text-done"></textarea>
+                    <div class="actions">
+                        <button class="save-btn" onclick="addTask('done')">添加卡片</button>
+                        <button class="cancel-btn" onclick="hideInput('done')">&times;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let fileHandle = null;
+        let saveTimer = null;
+        let lastSaveTime = Date.now();
+        let lastSavedContent = ''; // 记录上次保存的内容
+        const SAVE_DELAY = 30000; // 延迟 30 秒写入文件
+
+        // 拖拽相关全局变量
+        let draggedItem = null;
+        let sourceColumnId = null;
+        let sourceIndex = null;
+        let animationTarget = null; // 用于记录需要播放动画的卡片位置 {status, index}
+        let placeholder = document.createElement('div');
+        placeholder.className = 'drop-placeholder';
+
+        // --- IndexedDB & 初始化逻辑 (保持不变) ---
+        const DB_NAME = 'MyBoardDB';
+        const STORE_NAME = 'fileHandles';
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onupgradeneeded = (e) => {
+                    e.target.result.createObjectStore(STORE_NAME);
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function saveHandleToDB(handle) {
+            const db = await openDB();
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            tx.objectStore(STORE_NAME).put(handle, 'lastUsedFile');
+        }
+
+        async function getHandleFromDB() {
+            const db = await openDB();
+            return new Promise((resolve) => {
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const request = tx.objectStore(STORE_NAME).get('lastUsedFile');
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => resolve(null);
+            });
+        }
+
+        // --- 初始化逻辑 ---
+        
+        // 页面加载时，尝试从数据库恢复上次的文件
+        window.addEventListener('load', async () => {
+            setupDragAndDrop(); // 初始化拖拽上传区域
+
+            const savedHandle = await getHandleFromDB();
+            if (savedHandle) {
+                fileHandle = savedHandle;
+                const btn = document.querySelector('.file-btn');
+                btn.textContent = `📂 点击重连: ${savedHandle.name}`;
+                btn.onclick = verifyPermissionAndLoad; // 改变按钮行为
+                btn.style.backgroundColor = '#1f6feb'; // 提示色
+            }
+            render(); // 渲染 LocalStorage 中的缓存数据
+        });
+
+        // 初始化数据 (默认从 LocalStorage 加载)
+        let tasks = JSON.parse(localStorage.getItem('myBoardTasks')) || {
+            todo: ['制定周计划', '回复重要邮件'],
+            inprogress: ['编写项目代码'],
+            done: ['晨会']
+        };
+
+        // 渲染页面
+        function render() {
+            ['todo', 'inprogress', 'done'].forEach(status => {
+                const listEl = document.getElementById(`list-${status}`);
+                const countEl = document.getElementById(`count-${status}`);
+                
+                // 保存当前的滚动位置，防止渲染后跳动
+                const scrollTop = listEl.scrollTop;
+                
+                listEl.innerHTML = '';
+                
+                tasks[status].forEach((taskText, index) => {
+                    const card = createCardElement(taskText, status, index);
+                    
+                    // 如果是刚拖拽放入的卡片，添加动画类
+                    if (animationTarget && animationTarget.status === status && animationTarget.index === index) {
+                        card.classList.add('animate-drop');
+                    }
+                    
+                    listEl.appendChild(card);
+                });
+
+                countEl.textContent = tasks[status].length;
+                listEl.scrollTop = scrollTop;
+            });
+            
+            // 渲染完成后清除动画目标，避免下次渲染重复播放
+            animationTarget = null;
+            
+            localStorage.setItem('myBoardTasks', JSON.stringify(tasks));
+        }
+
+        // 创建卡片 DOM 元素 (封装以便复用)
+        function createCardElement(text, status, index) {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.draggable = true;
+            card.dataset.status = status;
+            card.dataset.index = index;
+            
+            // 拖拽事件绑定
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+
+            // 1. 文本内容 (点击编辑)
+            const textSpan = document.createElement('span');
+            textSpan.textContent = text;
+            textSpan.style.display = 'block';
+            textSpan.style.wordBreak = 'break-word';
+            textSpan.onclick = (e) => {
+                e.stopPropagation(); // 防止触发卡片的其他点击事件
+                enableEditMode(card, textSpan, status, index);
+            };
+            card.appendChild(textSpan);
+
+            // 2. 长按删除按钮
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn';
+            delBtn.title = '长按删除';
+            
+            // SVG 圆环进度条
+            delBtn.innerHTML = `
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"></circle></svg>
+                <span class="x-icon">&times;</span>
+            `;
+
+            // 长按逻辑
+            let pressTimer;
+            const startPress = () => {
+                delBtn.classList.add('pressing');
+                pressTimer = setTimeout(() => {
+                    // 关键修复：如果按钮已经被移除（例如发生了重绘），则不执行删除
+                    if (document.body.contains(delBtn)) {
+                        deleteTask(status, index);
+                    }
+                }, 400); // 0.4秒后删除
+            };
+            const cancelPress = () => {
+                delBtn.classList.remove('pressing');
+                clearTimeout(pressTimer);
+            };
+
+            delBtn.addEventListener('mousedown', startPress);
+            delBtn.addEventListener('mouseup', cancelPress);
+            delBtn.addEventListener('mouseleave', cancelPress);
+            // 触摸屏支持
+            delBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startPress(); });
+            delBtn.addEventListener('touchend', cancelPress);
+
+            card.appendChild(delBtn);
+            return card;
+        }
+
+        // --- 编辑功能 ---
+        function enableEditMode(card, textSpan, status, index) {
+            const originalText = textSpan.textContent;
+            
+            // 创建输入框替代文本
+            const textarea = document.createElement('textarea');
+            textarea.className = 'edit-mode';
+            textarea.value = originalText;
+            
+            // 自动调整高度
+            textarea.style.height = Math.max(60, textSpan.offsetHeight + 10) + 'px';
+
+            // 替换 DOM
+            card.replaceChild(textarea, textSpan);
+            textarea.focus();
+
+            // 保存逻辑
+            const saveEdit = () => {
+                const newText = textarea.value.trim();
+                if (newText && newText !== originalText) {
+                    tasks[status][index] = newText;
+                    onDataChanged(); // 触发保存和重绘
+                } else {
+                    // 如果没变或为空，恢复原样 (重绘最简单)
+                    render(); 
+                }
+            };
+
+            // 失焦或回车保存
+            textarea.addEventListener('blur', saveEdit);
+            textarea.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    textarea.blur(); // 触发 blur 保存
+                }
+            });
+        }
+
+        // --- 拖拽排序逻辑 (核心重构) ---
+
+        function handleDragStart(e) {
+            draggedItem = this;
+            sourceColumnId = this.dataset.status;
+            sourceIndex = parseInt(this.dataset.index);
+            
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', JSON.stringify({status: sourceColumnId, index: sourceIndex}));
+            
+            // 延迟添加样式，让拖拽的“幽灵”图片是原样，而源元素变淡
+            setTimeout(() => this.classList.add('dragging'), 0);
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            if (placeholder.parentNode) {
+                placeholder.parentNode.removeChild(placeholder);
+            }
+            draggedItem = null;
+            
+            // 移除所有列的高亮
+            document.querySelectorAll('.column').forEach(col => col.classList.remove('drag-over'));
+        }
+
+        // 允许放置 (绑定在 Column 上)
+        function allowDrop(e) {
+            e.preventDefault();
+            const column = e.target.closest('.column');
+            if (!column) return;
+
+            column.classList.add('drag-over');
+
+            const list = column.querySelector('.task-list');
+            const afterElement = getDragAfterElement(list, e.clientY);
+            
+            if (afterElement == null) {
+                list.appendChild(placeholder);
+            } else {
+                list.insertBefore(placeholder, afterElement);
+            }
+        }
+
+        // 离开列区域
+        function dragLeave(e) {
+            const column = e.target.closest('.column');
+            // 只有当真正离开 column 时才移除样式 (避免子元素触发)
+            if (column && !column.contains(e.relatedTarget)) {
+                column.classList.remove('drag-over');
+                if (placeholder.parentNode === column.querySelector('.task-list')) {
+                    placeholder.parentNode.removeChild(placeholder);
+                }
+            }
+        }
+
+        // 放置 (Drop)
+        function drop(e) {
+            e.preventDefault();
+            const column = e.target.closest('.column');
+            if (!column) return;
+            
+            column.classList.remove('drag-over');
+            const targetStatus = column.id; // 'todo', 'inprogress', 'done'
+
+            // 计算目标索引
+            // 我们通过 placeholder 在列表中的位置来决定插入索引
+            const list = column.querySelector('.task-list');
+            const children = Array.from(list.children);
+            let targetIndex = children.indexOf(placeholder);
+            
+            // 如果 placeholder 还在里面，说明是有效放置
+            if (targetIndex !== -1) {
+                // 移动数据
+                const itemText = tasks[sourceColumnId][sourceIndex];
+                
+                // 1. 先从源数组删除
+                tasks[sourceColumnId].splice(sourceIndex, 1);
+                
+                // 2. 修正目标索引 (如果是同列移动，且向下拖动，删除源元素后索引会变化)
+                if (sourceColumnId === targetStatus && sourceIndex < targetIndex) {
+                    targetIndex--; 
+                }
+
+                // 3. 插入到目标位置
+                tasks[targetStatus].splice(targetIndex, 0, itemText);
+                
+                // 设置动画目标，让 render 函数给这个新位置的卡片加动画
+                animationTarget = { status: targetStatus, index: targetIndex };
+
+                onDataChanged();
+            }
+        }
+
+        // 辅助函数：根据鼠标 Y 坐标获取最近的列表项
+        function getDragAfterElement(container, y) {
+            // 获取容器内所有非 dragging 的卡片
+            const draggableElements = [...container.querySelectorAll('.task-card:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                // 计算鼠标距离卡片中心的垂直偏移量
+                const offset = y - box.top - box.height / 2;
+                
+                // offset < 0 意味着鼠标在元素上方
+                // 我们要找的是 offset 为负且绝对值最小的那个元素 (即鼠标正上方的那个元素)
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // --- 其他逻辑 (保持不变) ---
+        
+        // 数据变更触发器
+        function onDataChanged() {
+            render();
+            if (fileHandle) {
+                scheduleSave();
+            }
+        }
+
+        // 延迟保存逻辑 (防抖)
+        function scheduleSave() {
+            const statusText = document.getElementById('file-status-text');
+            const statusDot = document.getElementById('status-dot');
+            
+            statusDot.className = 'status-indicator pending';
+            statusText.textContent = '有更改，30秒后写入文件...';
+            
+            if (saveTimer) clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => {
+                saveFile();
+            }, SAVE_DELAY);
+        }
+
+        function forceSave() {
+            if (saveTimer) clearTimeout(saveTimer);
+            saveFile();
+        }
+
+        // 验证权限并加载 (用于重连)
+        async function verifyPermissionAndLoad() {
+            if (!fileHandle) return openFile();
+
+            const options = { mode: 'readwrite' };
+            
+            // 检查是否已有权限
+            if ((await fileHandle.queryPermission(options)) === 'granted') {
+                await loadFileContent();
+                return;
+            }
+
+            // 请求权限
+            if ((await fileHandle.requestPermission(options)) === 'granted') {
+                await loadFileContent();
+            } else {
+                alert('需要授权才能同步文件。');
+            }
+        }
+
+        // 打开新文件
+        async function openFile() {
+            try {
+                [fileHandle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'Markdown Files',
+                        accept: { 'text/markdown': ['.md'] },
+                    }],
+                    multiple: false
+                });
+                
+                await loadFileContent();
+                
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('打开文件失败:', err);
+                    alert('无法打开文件，请确保使用 Chrome/Edge 浏览器。');
+                }
+            }
+        }
+
+        // 读取文件内容的通用逻辑
+        async function loadFileContent() {
+            try {
+                const file = await fileHandle.getFile();
+                const text = await file.text();
+                
+                if (text.trim().length > 0) {
+                    parseMarkdown(text);
+                    // 解析后立即生成标准格式，作为基准，避免格式差异导致的误判
+                    lastSavedContent = generateMarkdown();
+                } else {
+                    saveFile(); // 新文件则写入当前数据
+                }
+                
+                // 存入 IndexedDB 以便下次自动记忆
+                await saveHandleToDB(fileHandle);
+
+                // 更新 UI
+                document.getElementById('status-container').style.display = 'flex';
+                const btn = document.querySelector('.file-btn');
+                btn.textContent = `📂 已连接: ${file.name}`;
+                btn.onclick = openFile; // 允许再次点击切换文件
+                btn.style.backgroundColor = '#238636'; // 绿色表示成功
+                document.getElementById('file-status-text').textContent = '已关联，准备就绪';
+                
+                render();
+            } catch (err) {
+                console.error('读取失败', err);
+                alert('读取文件失败，请重试');
+            }
+        }
+
+        async function saveFile() {
+            if (!fileHandle) return;
+
+            const statusText = document.getElementById('file-status-text');
+            const statusDot = document.getElementById('status-dot');
+
+            try {
+                const text = generateMarkdown();
+
+                // 检查内容是否有变更
+                if (text === lastSavedContent) {
+                    statusDot.className = 'status-indicator saved';
+                    statusText.textContent = `已保存 (无变更)`;
+                    return;
+                }
+
+                statusText.textContent = '正在写入文件...';
+                
+                const writable = await fileHandle.createWritable();
+                await writable.write(text);
+                await writable.close();
+                
+                // 更新状态
+                lastSavedContent = text; // 更新基准内容
+                lastSaveTime = Date.now();
+                statusDot.className = 'status-indicator saved';
+                statusText.textContent = `已保存 (${new Date().toLocaleTimeString()})`;
+                
+            } catch (err) {
+                console.error('保存失败:', err);
+                statusDot.className = 'status-indicator error';
+                statusText.textContent = '⚠️ 保存失败 (文件可能被占用)';
+                
+                // 如果失败，尝试 5 秒后重试
+                saveTimer = setTimeout(saveFile, 5000);
+            }
+        }
+
+        // 解析 Markdown
+        function parseMarkdown(text) {
+            const lines = text.split('\n');
+            const newTasks = { todo: [], inprogress: [], done: [] };
+            let currentSection = null;
+
+            for (let line of lines) {
+                line = line.trim();
+                if (line.includes('待办事项') || line.includes('To Do')) {
+                    currentSection = 'todo';
+                } else if (line.includes('进行中') || line.includes('In Progress')) {
+                    currentSection = 'inprogress';
+                } else if (line.includes('已完成') || line.includes('Done')) {
+                    currentSection = 'done';
+                } else if (line.startsWith('##')) {
+                    currentSection = null;
+                }
+
+                if (currentSection && (line.startsWith('- [ ]') || line.startsWith('- [x]'))) {
+                    const content = line.replace(/^-\s\[[ x]\]\s+/, '').trim();
+                    if (content) newTasks[currentSection].push(content);
+                }
+            }
+            tasks = newTasks;
+        }
+
+        // 生成 Markdown
+        function generateMarkdown() {
+            let md = `# 📅 我的日程看板\n\n`;
+            md += `> 最后更新时间: ${new Date().toLocaleString()}\n`;
+            md += `> 此文件由日程看板网页自动生成。\n\n`;
+
+            md += `## 📝 待办事项 (To Do)\n\n`;
+            tasks.todo.forEach(t => md += `- [ ] ${t}\n`);
+            md += `\n`;
+
+            md += `## 🚧 进行中 (In Progress)\n\n`;
+            tasks.inprogress.forEach(t => md += `- [ ] ${t}\n`);
+            md += `\n`;
+
+            md += `## ✅ 已完成 (Done)\n\n`;
+            tasks.done.forEach(t => md += `- [x] ${t}\n`);
+            md += `\n`;
+
+            md += `***\n\n## 🗑️ 搁置/取消\n\n- [ ] \n`;
+            return md;
+        }
+
+        // 设置拖拽区域
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('drop-zone');
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+            });
+
+            dropZone.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+
+                const items = [...e.dataTransfer.items];
+                const item = items[0];
+
+                if (item && item.kind === 'file') {
+                    if (item.getAsFileSystemHandle) {
+                        const handle = await item.getAsFileSystemHandle();
+                        if (handle.kind === 'file' && handle.name.endsWith('.md')) {
+                            fileHandle = handle;
+                            await loadFileContent();
+                            return;
+                        }
+                    }
+                    alert('为了支持自动保存功能，请点击按钮选择文件，或者确保浏览器支持文件系统访问 API。');
+                }
+            });
+        }
+
+        // 删除任务 (带动画)
+        function deleteTask(columnId, index) {
+            // 震动反馈
+            if (navigator.vibrate) navigator.vibrate(50);
+            
+            const list = document.getElementById(`list-${columnId}`);
+            const card = list.children[index];
+
+            if (card) {
+                // 播放删除动画
+                card.classList.add('animate-delete');
+                
+                // 等待动画结束后再真正删除数据
+                setTimeout(() => {
+                    tasks[columnId].splice(index, 1);
+                    onDataChanged();
+                }, 350); // 略小于动画时间，感觉更连贯
+            } else {
+                // 容错处理
+                tasks[columnId].splice(index, 1);
+                onDataChanged();
+            }
+        }
+
+        // 显示输入框
+        function showInput(columnId) {
+            document.querySelector(`#${columnId} .add-btn`).style.display = 'none';
+            document.querySelector(`#${columnId} .input-group`).style.display = 'block';
+            document.getElementById(`text-${columnId}`).focus();
+        }
+
+        // 隐藏输入框
+        function hideInput(columnId) {
+            document.querySelector(`#${columnId} .add-btn`).style.display = 'block';
+            document.querySelector(`#${columnId} .input-group`).style.display = 'none';
+            document.getElementById(`text-${columnId}`).value = '';
+        }
+
+        // 添加任务
+        function addTask(columnId) {
+            const input = document.getElementById(`text-${columnId}`);
+            const text = input.value.trim();
+            if (text) {
+                tasks[columnId].push(text);
+                
+                // 设置动画目标：新添加的卡片（位于最后）
+                animationTarget = { status: columnId, index: tasks[columnId].length - 1 };
+                
+                onDataChanged();
+                input.value = '';
+                input.focus(); 
+            }
+        }
+
+
+        // 初始渲染
+        render();
+
+        // 监听 Enter 键提交
+        document.querySelectorAll('textarea').forEach(area => {
+            area.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const columnId = this.id.split('-')[1];
+                    addTask(columnId);
+                }
+            });
+        });
+
+        // --- 安全保存逻辑 ---
+        
+        // 页面隐藏/切换时尝试保存
+        window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                forceSave();
+            }
+        });
+
+        // 页面关闭前检查
+        window.addEventListener('beforeunload', (e) => {
+            if (fileHandle) {
+                const currentContent = generateMarkdown();
+                if (currentContent !== lastSavedContent) {
+                    // 尝试触发保存
+                    forceSave();
+                    
+                    // 触发浏览器拦截弹窗，为异步保存争取时间
+                    // 注意：现代浏览器可能不会显示自定义文本，但会提示用户
+                    e.preventDefault();
+                    e.returnValue = '您有未保存的更改，确定要离开吗？';
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
