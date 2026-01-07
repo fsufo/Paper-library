@@ -428,7 +428,10 @@
                 
                 // 标题 (白色)
                 const text = new SpriteText(node.label); 
-                text.color = '#fff'; text.textHeight = 4; text.position.y = -18;
+                text.color = '#fff'; text.textHeight = 4; 
+                // Fix: 使用 center 属性代替 position.y，确保文字始终在并在屏幕空间下方
+                // (0.5, 4.0) means anchor is horizontal-center and vertical-offset (pushed up relative to text)
+                text.center = new THREE.Vector2(0.5, 4.0);
                 text.material.transparent = true; text.material.opacity = 0; text.material.depthWrite = false;
                 group.add(text); group.text = text; 
                 
@@ -442,7 +445,9 @@
                 }
                 
                 const subText = new SpriteText(tagStr);
-                subText.color = '#88a'; subText.textHeight = 2.5; subText.position.y = -24;
+                subText.color = '#88a'; subText.textHeight = 2.5;
+                // Tag 紧随标题下方
+                subText.center = new THREE.Vector2(0.5, 8.0);
                 subText.material.transparent = true; subText.material.opacity = 0; subText.material.depthWrite = false;
                 group.add(subText); group.subText = subText;
 
