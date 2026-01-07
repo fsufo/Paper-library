@@ -63,12 +63,28 @@
     <div id="helicopter-cat"><div class="cat-body-container"><div id="zzz-bubble">Zzz...</div><div class="propeller"></div><div class="cat-ear left"></div><div class="cat-ear right"></div><div class="cat-body"><div class="cat-face"><div class="eye left"></div><div class="eye right"></div></div></div></div></div>
     
     <!-- Settings Panel -->
+    <div id="controls-panel" style="position: fixed; bottom: 170px; left: 20px; z-index: 99; color: #88a; font-size: 12px; font-family: 'Segoe UI', sans-serif; pointer-events: none;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+            <div>🖱️ <span style="color:#88ccff">Left</span>: Rotate / Drag</div>
+            <div>🖱️ <span style="color:#88ccff">Wheel</span>: Zoom</div>
+            <div>🖱️ <span style="color:#88ccff">Right</span>: Rotate</div>
+            <div>⌨️ <span style="color:#ffaa00">ESC</span>: Reset View</div>
+        </div>
+    </div>
+
     <div id="settings-panel" style="position: fixed; bottom: 20px; left: 20px; z-index: 99; background: rgba(10, 15, 25, 0.85); padding: 15px; border-radius: 12px; border: 1px solid rgba(100, 150, 255, 0.2); backdrop-filter: blur(5px); color: #ccc; font-size: 13px; font-family: 'Segoe UI', sans-serif;">
         <div style="margin-bottom: 8px; font-weight: bold; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">View Settings</div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="cursor: pointer; display: flex; align-items: center;"><input type="checkbox" id="chk-wiki" onchange="updateGraphFilter()" style="margin-right: 8px; accent-color: #00ccff;">Show Wiki Links [[ ]]</label>
-            <label style="cursor: pointer; display: flex; align-items: center;"><input type="checkbox" id="chk-md" checked onchange="updateGraphFilter()" style="margin-right: 8px; accent-color: #ffaa00;">Show MD Links [ ]</label>
-            <label style="cursor: pointer; display: flex; align-items: center;"><input type="checkbox" id="chk-gravity" checked onchange="updateGraphFilter()" style="margin-right: 8px; accent-color: #ff1133;">Enable Tag Gravity</label>
+        <div style="margin-bottom: 6px;">
+            <input type="checkbox" id="chk-wiki" onchange="updateGraphFilter()" style="vertical-align: middle;">
+            <label for="chk-wiki" style="vertical-align: middle; cursor: pointer;">Show Wiki Links</label>
+        </div>
+        <div style="margin-bottom: 6px;">
+            <input type="checkbox" id="chk-md" checked onchange="updateGraphFilter()" style="vertical-align: middle;">
+            <label for="chk-md" style="vertical-align: middle; cursor: pointer;">Show MD Links</label>
+        </div>
+        <div>
+            <input type="checkbox" id="chk-gravity" checked onchange="updateGraphFilter()" style="vertical-align: middle;">
+            <label for="chk-gravity" style="vertical-align: middle; cursor: pointer;">Tag Force Gravity</label>
         </div>
     </div>
 
@@ -113,7 +129,7 @@
             const chargeStrength = enableGravity ? -120 : -60;
             Graph.d3Force('charge').strength(chargeStrength);
 
-            // 4. 重建活跃邻居索引 (使用全局字典，不再依赖 Node 对象属性)
+            // 4. 重建活跃 neighbors 索引 (使用全局字典，不再依赖 Node 对象属性)
             activeLookup = {}; // 清空
             
             // 辅助函数：安全获取 ID
@@ -196,6 +212,12 @@
         let Graph, maxDegree = 1;
         let highlightNodes = new Set(), highlightLinks = new Set();
         let hoverNode = null, initialCameraPos = null, starryParticles = null;
+        let globalStartPos = null; // 宇宙初始最佳视角
+
+        // 惯性缩放系统变量
+        let zoomVelocity = 0;
+        let zoomPivot = null;
+        let mouseScreenPos = new THREE.Vector2(0, 0);
 
         const modal = document.getElementById('article-modal');
         const box = document.getElementById('markdown-container');
@@ -222,7 +244,20 @@
             const cat = document.getElementById('helicopter-cat');
             if(cat) cat.classList.remove('hidden');
         }
-        document.addEventListener('keydown', e => { if(e.key==='Escape') closeArticle(); });
+        document.addEventListener('keydown', e => { 
+            if(e.key==='Escape') {
+                if(modal.classList.contains('active')) {
+                    closeArticle();
+                } else if(Graph && globalStartPos) {
+                    // 回到宇宙最佳视角
+                    Graph.cameraPosition(
+                        globalStartPos, 
+                        {x:0, y:0, z:0}, 
+                        2000
+                    );
+                }
+            }
+        });
 
         // 色温算法 (高饱和度)
         function getStarColor(degree) {
@@ -440,45 +475,33 @@
             Graph.d3Force('charge').strength(-120); 
             Graph.d3Force('link').distance(link => link.isClusterLink ? 40 : 100).strength(link => link.isClusterLink ? 0.05 : 1);
             
-            // 5. 自定义鼠标缩放 (Zoom to Cursor)
+            // 5. 自定义鼠标缩放 (Zoom to Cursor) & 交互限制
+            Graph.enableNodeDrag(true); // 恢复左键拖动星星
+            
             const controls = Graph.controls();
-            controls.enableZoom = false; // Disable default center-zoom
+            controls.enablePan = false;  // 禁用右键平移，防止迷失
+            controls.enableZoom = false; // 禁用原生缩放，接管滚轮
+
+            // 记录初始最佳视角
+            setTimeout(() => {
+                const c = Graph.camera().position;
+                globalStartPos = { x: c.x, y: c.y, z: c.z };
+            }, 1000);
+
+            // 记录鼠标位置供动画帧使用
+            document.addEventListener('mousemove', (e) => {
+                mouseScreenPos.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouseScreenPos.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            });
 
             document.addEventListener('wheel', (e) => {
-                if(modal.classList.contains('active')) return; // Don't zoom if reading
+                if(modal.classList.contains('active')) return;
                 e.preventDefault();
-
-                const cam = Graph.camera();
-                const target = controls.target;
-                
-                // Calculate Mouse Direction in World Space
-                const mouse = new THREE.Vector2();
-                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-                const raycaster = new THREE.Raycaster();
-                raycaster.setFromCamera(mouse, cam);
-
-                // Find a Pivot Point (Project cursor to the plane of current target)
-                // Use a plane perpendicular to camera direction passing through target
-                const planeNormal = new THREE.Vector3();
-                cam.getWorldDirection(planeNormal);
-                const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, target);
-                const pivot = new THREE.Vector3();
-                raycaster.ray.intersectPlane(plane, pivot);
-                
-                if(!pivot) return; // Should not happen usually
-
-                // Zoom Factor
-                const zoomSpeed = 0.05; // 灵敏度
-                const factor = e.deltaY > 0 ? (1 + zoomSpeed) : (1 / (1 + zoomSpeed));
-
-                // Apply Zoom centered at Pivot
-                // NewPos = Pivot + (Pos - Pivot) * factor
-                cam.position.sub(pivot).multiplyScalar(factor).add(pivot);
-                target.sub(pivot).multiplyScalar(factor).add(pivot);
-
-                controls.update();
+                // 累加动力，而不是直接位移
+                // 方向修正：deltaY > 0 是向下滚(拉近/拉远取决于习惯)，通常滚轮向下是View变大(离得更远)
+                // 这里设定：滚轮向下(正) -> 远离 -> Velocity > 0
+                const sensitivity = 0.0008; 
+                zoomVelocity += e.deltaY * sensitivity;
             }, { passive: false });
 
             updateGraphFilter(); // Initial Render
@@ -487,6 +510,50 @@
         // 动画循环
         function animateFrame() {
             requestAnimationFrame(animateFrame);
+            
+            // A. 处理惯性缩放
+            if (Math.abs(zoomVelocity) > 0.0001) {
+                const cam = Graph.camera();
+                const target = Graph.controls().target;
+
+                // 1. 实时计算当前锚点 (Real-time pivot)
+                let currentPivot = null;
+                
+                if (hoverNode) {
+                    currentPivot = new THREE.Vector3(hoverNode.x, hoverNode.y, hoverNode.z);
+                } else {
+                    const raycaster = new THREE.Raycaster();
+                    raycaster.setFromCamera(mouseScreenPos, cam);
+                    const planeNormal = new THREE.Vector3();
+                    cam.getWorldDirection(planeNormal);
+                    const planeAtTarget = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, target);
+                    const intersect = new THREE.Vector3();
+                    raycaster.ray.intersectPlane(planeAtTarget, intersect);
+                    if(intersect) currentPivot = intersect;
+                }
+
+                if (currentPivot) {
+                    // 2. 应用缩放 (无限制版)
+                    const factor = 1 + zoomVelocity;
+                    
+                    const camVec = cam.position.clone().sub(currentPivot).multiplyScalar(factor);
+                    const tgtVec = target.clone().sub(currentPivot).multiplyScalar(factor);
+                    
+                    const nextPos = currentPivot.clone().add(camVec);
+                    const nextTarget = currentPivot.clone().add(tgtVec);
+                    
+                    cam.position.copy(nextPos);
+                    target.copy(nextTarget);
+                    Graph.controls().update();
+                }
+
+                // 3. 阻尼衰减
+                zoomVelocity *= 0.85; 
+                if (Math.abs(zoomVelocity) < 0.0001) {
+                    zoomVelocity = 0;
+                }
+            }
+
             const { nodes, links } = Graph.graphData();
             if(!nodes || nodes.length === 0) return;
             
@@ -536,12 +603,12 @@
                     const bCore = group.userData.baseScaleCore;
                     group.core.scale.set(bCore*sCore, bCore*sCore, 1);
                     
-                    // 2. Cross: 呼吸 + 距离自适应放大 (Smart Scaling)
-                    // 距离越远，缩放倍率越大，补偿透视使其可见
-                    // dist=100 -> 1x, dist=1000 -> 2x?
-                    const distFactor = 1 + Math.min(dist / 400, 4.0); 
+                    // 2. Cross: 呼吸 + 适度距离补偿
+                    // 调整为最大放大 5 倍，且增长曲线更平缓 (dist/300)
+                    // 这样远处的星星十字不会显得喧宾夺主
+                    const distFactor = 1 + Math.min(dist / 300, 5.0); 
                     
-                    const sCross = (1 + timeS * 0.08) * distFactor;
+                    const sCross = sCore * distFactor;
                     const bCross = group.userData.baseScaleCross;
                     group.cross.scale.set(bCross*sCross, bCross*sCross, 1);
                 }
