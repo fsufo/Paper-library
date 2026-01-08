@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -35,6 +35,15 @@ jobs:
       # 注意：脚本会自动找到上一级的 posts 目录，不用担心
       - name: Build Blog Data
         run: python scripts/build_data.py
+
+      # === 新增步骤: 将生成的文件提交回仓库 ===
+      - name: Commit and Push generated files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 'posts/笔记目录[脚本生成]' posts_data.json
+          git commit -m "Auto-generate index and json [skip ci]" || echo "No changes to commit"
+          git push origin HEAD:${{ github.ref_name }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
