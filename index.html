@@ -134,6 +134,13 @@
 
     <div id="settings-panel" style="position: fixed; bottom: 20px; left: 20px; z-index: 99; background: rgba(10, 15, 25, 0.85); padding: 15px; border-radius: 12px; border: 1px solid rgba(100, 150, 255, 0.2); backdrop-filter: blur(5px); color: #ccc; font-size: 13px; font-family: 'Segoe UI', sans-serif;">
         <div style="margin-bottom: 8px; font-weight: bold; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">View Settings</div>
+        
+        <!-- 新增：索引节点开关 -->
+        <div style="margin-bottom: 6px;">
+            <input type="checkbox" id="chk-index-nodes" onchange="updateGraphFilter()" style="vertical-align: middle;">
+            <label for="chk-index-nodes" style="vertical-align: middle; cursor: pointer;">Show Index Nodes</label>
+        </div>
+        
         <div style="margin-bottom: 6px;">
             <input type="checkbox" id="chk-wiki" onchange="updateGraphFilter()" style="vertical-align: middle;">
             <label for="chk-wiki" style="vertical-align: middle; cursor: pointer;">Show Wiki Links</label>
@@ -227,23 +234,35 @@
         function updateGraphFilter() {
             if(!gData || !Graph) return;
             
+            // 获取控件状态
             const showWiki = document.getElementById('chk-wiki').checked;
             const showMd = document.getElementById('chk-md').checked;
             const enableGravity = document.getElementById('chk-gravity').checked;
+            const showIndexNodes = document.getElementById('chk-index-nodes').checked; // 获取索引开关
 
-            // 0. Filter Nodes by Tags (Intersectional)
-            let filteredNodes = gData.nodes;
-            if (selectedTags.size > 0) {
-                filteredNodes = gData.nodes.filter(n => {
-                     // Get node tags
-                     const nodeTags = (n.all_tags && n.all_tags.length > 0) ? n.all_tags : [n.group || 'default'];
-                     // Check intersection: Node must have ALL selected tags
-                     for (let t of selectedTags) {
+            // 定义索引类 Tag
+            const indexKeywords = ['index', '目录', '索引'];
+
+            // 0. Filter Nodes
+            let filteredNodes = gData.nodes.filter(n => {
+                const nodeTags = (n.all_tags && n.all_tags.length > 0) ? n.all_tags : [n.group || 'default'];
+                
+                // 1. 索引节点过滤逻辑：如果不显示索引，且该节点包含索引类tag，则过滤掉
+                if (!showIndexNodes) {
+                    const isIndexNode = nodeTags.some(tag => indexKeywords.includes(tag.toLowerCase()));
+                    if (isIndexNode) return false;
+                }
+
+                // 2. 标签筛选逻辑 (交集)
+                if (selectedTags.size > 0) {
+                    for (let t of selectedTags) {
                          if (!nodeTags.includes(t)) return false;
-                     }
-                     return true;
-                });
-            }
+                    }
+                }
+                
+                return true;
+            });
+
             const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
             
             // 1. Filter valid links
