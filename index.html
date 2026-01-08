@@ -1188,7 +1188,7 @@
             
             // 将星星范围压缩到 600 -> 3500，确保在视锥体内
             for(let i=0; i<8000; i++) {
-                const r = 3000 * Math.pow(Math.random(), 0.5) + 600; 
+                const r = 4000 * Math.pow(Math.random(), 0.5); 
                 const theta = Math.random()*Math.PI*2, phi = Math.acos(2*Math.random()-1);
                 pos.push(r*Math.sin(phi)*Math.cos(theta), r*Math.sin(phi)*Math.sin(theta), r*Math.cos(phi));
                 
