@@ -12,8 +12,6 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 POSTS_DIR = os.path.join(PROJECT_ROOT, 'posts')
 OUTPUT_FILE = os.path.join(PROJECT_ROOT, 'posts_data.json')
-ENABLE_WIKI_LINKS = True 
-
 def log(msg):
     if DEBUG_MODE:
         print(f"[DEBUG] {msg}")
@@ -154,20 +152,10 @@ def build_data():
         except Exception as e:
             print(f"[Warning] 处理 {filename} 失败: {e}")
 
-    # 2. 解析连接
-    link_pattern_wiki = re.compile(r'\[\[(.*?)\]\]')
+    # 2. 解析连接 (仅处理 MD 链接，忽略 Wiki 链接)
     link_pattern_md = re.compile(r'\[.*?\]\((.*?)\)')
     
     for node in nodes:
-        if ENABLE_WIKI_LINKS:
-            for match in link_pattern_wiki.findall(node['content']):
-                target = match.split('|')[0].strip()
-                for k, v in id_map.items():
-                    if k.lower() == target.lower() or k.replace('.md','').lower() == target.lower():
-                        if v != node['id']: 
-                            links.append({"source": node['id'], "target": v, "type": "wiki"})
-                        break
-        
         for match in link_pattern_md.findall(node['content']):
             if match.startswith('http') or match.startswith('//'):
                 continue

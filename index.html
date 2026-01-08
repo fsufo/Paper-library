@@ -122,40 +122,37 @@
     <div id="3d-graph"></div>
     <div id="helicopter-cat"><div class="cat-body-container"><div id="zzz-bubble">Zzz...</div><div class="propeller"></div><div class="cat-ear left"></div><div class="cat-ear right"></div><div class="cat-body"><div class="cat-face"><div class="eye left"></div><div class="eye right"></div></div></div></div></div>
     
-    <!-- Settings Panel -->
-    <div id="controls-panel" style="position: fixed; bottom: 170px; left: 20px; z-index: 99; color: #88a; font-size: 12px; font-family: 'Segoe UI', sans-serif; pointer-events: none;">
-        <div style="display: flex; flex-direction: column; gap: 4px;">
-            <div>🖱️ <span style="color:#88ccff">Left</span>: Rotate / Drag</div>
-            <div>🖱️ <span style="color:#88ccff">Wheel</span>: Zoom</div>
-            <div>🖱️ <span style="color:#88ccff">Right</span>: Rotate</div>
-            <div>⌨️ <span style="color:#ffaa00">ESC</span>: Reset View</div>
+    <!-- Settings Panel (Minimalist, Controls First) -->
+    <div id="settings-panel" style="position: fixed; bottom: 20px; left: 20px; z-index: 99; padding: 12px; border-radius: 8px; color: #aaa; font-size: 12px; font-family: 'Segoe UI', sans-serif; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(2px); transition: opacity 0.3s;">
+        
+        <!-- 1. Controls (First as requested) -->
+        <div style="margin-bottom: 15px;">
+            <div style="font-weight: bold; color: #fff; margin-bottom: 6px; font-size: 12px; opacity: 0.8;">Controls</div>
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+                <div><span style="color:#88ccff">Left Mouse</span> &nbsp; Rotate / Drag</div>
+                <div><span style="color:#88ccff">Wheel</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Zoom</div>
+                <div><span style="color:#88ccff">Right Mouse</span> Rotate</div>
+                <div><span style="color:#ffaa00">ESC</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Reset View</div>
+            </div>
         </div>
-    </div>
 
-    <div id="settings-panel" style="position: fixed; bottom: 20px; left: 20px; z-index: 99; background: rgba(10, 15, 25, 0.85); padding: 15px; border-radius: 12px; border: 1px solid rgba(100, 150, 255, 0.2); backdrop-filter: blur(5px); color: #ccc; font-size: 13px; font-family: 'Segoe UI', sans-serif;">
-        <div style="margin-bottom: 8px; font-weight: bold; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">View Settings</div>
-        
-        <!-- 新增：索引节点开关 -->
-        <div style="margin-bottom: 6px;">
-            <input type="checkbox" id="chk-index-nodes" onchange="updateGraphFilter()" style="vertical-align: middle;">
-            <label for="chk-index-nodes" style="vertical-align: middle; cursor: pointer;">Show Index Nodes</label>
-        </div>
-        
-        <div style="margin-bottom: 6px;">
-            <input type="checkbox" id="chk-wiki" onchange="updateGraphFilter()" style="vertical-align: middle;">
-            <label for="chk-wiki" style="vertical-align: middle; cursor: pointer;">Show Wiki Links</label>
-        </div>
-        <div style="margin-bottom: 6px;">
-            <input type="checkbox" id="chk-md" checked onchange="updateGraphFilter()" style="vertical-align: middle;">
-            <label for="chk-md" style="vertical-align: middle; cursor: pointer;">Show MD Links</label>
-        </div>
-        <div style="margin-bottom: 6px;">
-            <input type="checkbox" id="chk-tag-links" checked onchange="updateGraphFilter()" style="vertical-align: middle;">
-            <label for="chk-tag-links" style="vertical-align: middle; cursor: pointer;">Show Tag Links</label>
-        </div>
+        <!-- 2. View Settings -->
         <div>
-            <input type="checkbox" id="chk-gravity" checked onchange="updateGraphFilter()" style="vertical-align: middle;">
-            <label for="chk-gravity" style="vertical-align: middle; cursor: pointer;">Tag Force Gravity</label>
+            <div style="font-weight: bold; color: #fff; margin-bottom: 6px; font-size: 12px; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">Filters</div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div>
+                    <input type="checkbox" id="chk-index-nodes" onchange="updateGraphFilter()" style="vertical-align: middle;">
+                    <label for="chk-index-nodes" style="vertical-align: middle; cursor: pointer; color: #ccc;">Index Nodes</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="chk-md" checked onchange="updateGraphFilter()" style="vertical-align: middle;">
+                    <label for="chk-md" style="vertical-align: middle; cursor: pointer; color: #ccc;">MD Links</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="chk-tag-links" checked onchange="updateGraphFilter()" style="vertical-align: middle;">
+                    <label for="chk-tag-links" style="vertical-align: middle; cursor: pointer; color: #ccc;">Tag Links</label>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -239,10 +236,8 @@
             if(!gData || !Graph) return;
             
             // 1. 获取所有开关状态
-            const showWiki = document.getElementById('chk-wiki').checked;
             const showMd = document.getElementById('chk-md').checked;
             const showTagLinks = document.getElementById('chk-tag-links') ? document.getElementById('chk-tag-links').checked : true;
-            const enableGravity = document.getElementById('chk-gravity').checked;
             // 兼容检查索引开关
             const chkIndex = document.getElementById('chk-index-nodes');
             const showIndexNodes = chkIndex ? chkIndex.checked : true;
@@ -276,7 +271,6 @@
                 if (!filteredNodeIds.has(sId) || !filteredNodeIds.has(tId)) return false;
 
                 // 根据类型筛选
-                if (l.type === 'wiki') return showWiki;
                 if (l.type === 'md') return showMd;
                 if (l.type === 'tag_group') return showTagLinks;
                 return true; 
@@ -349,8 +343,7 @@
             });
 
             // 5. 调整物理引擎
-            const chargeStrength = enableGravity ? -120 : -60;
-            Graph.d3Force('charge').strength(chargeStrength);
+            Graph.d3Force('charge').strength(-120);
 
             // 6. 重建高亮索引
             activeLookup = {}; 
@@ -688,33 +681,20 @@
                 tagsToProcess.forEach(tag => allTags.add(tag));
             });
 
-            // 2. 处理实体链接 & 预处理 (含双向Wiki处理)
+            // 2. 处理实体链接 & 预处理 (MD Link & Tag Link)
             // 此时 data.links 已经包含后端生成的 type: 'tag_group' 链接
-            const extraLinks = [];
             data.links.forEach(l => {
-                // 默认类型归为 wiki (如果后端未指定)
-                if(!l.type) l.type = 'wiki';
-
-                // Wiki Link: 添加反向的视觉 Link 以实现双向粒子
-                if(l.type === 'wiki') {
-                    extraLinks.push({ 
-                        source: l.target, 
-                        target: l.source, 
-                        type: 'wiki', 
-                        isReverse: true 
-                    });
-                }
+                // 默认类型归为 md (如果后端未指定) -- 虽然目前后端都指定了
+                if(!l.type) l.type = 'md';
             });
-            data.links.push(...extraLinks);
 
             data.links.forEach(l => {
                 // Pre-resolve objects for ForceGraph
                 const a = map[l.source], b = map[l.target];
                 if(a && b) { 
-                    // 仅正向实体链接参与邻居统计 (反向链接仅作为视觉辅助)
-                    // 注意：tag_group 链接虽然是实体的，但也参与邻居计算，影响星星大小(degree)
-                    // 如果不想让 Tag 连接影响星星大小，可以在这里加条件 && l.type !== 'tag_group'
-                    if(!l.isReverse) { a.neighbors.push(b); b.neighbors.push(a); }
+                    // 所有 MD 和 Tag 链接都参与邻居统计
+                    a.neighbors.push(b); 
+                    b.neighbors.push(a);
                     l.sourceNode = a; l.targetNode = b; 
                 }
             });

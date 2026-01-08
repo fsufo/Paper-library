@@ -429,17 +429,7 @@
     {
       "source": "post_1",
       "target": "post_0",
-      "type": "wiki"
-    },
-    {
-      "source": "post_1",
-      "target": "post_0",
       "type": "md"
-    },
-    {
-      "source": "post_10",
-      "target": "post_3",
-      "type": "wiki"
     },
     {
       "source": "post_10",
@@ -449,17 +439,7 @@
     {
       "source": "post_11",
       "target": "post_10",
-      "type": "wiki"
-    },
-    {
-      "source": "post_11",
-      "target": "post_10",
       "type": "md"
-    },
-    {
-      "source": "post_12",
-      "target": "post_5",
-      "type": "wiki"
     },
     {
       "source": "post_12",
@@ -469,17 +449,7 @@
     {
       "source": "post_13",
       "target": "post_1",
-      "type": "wiki"
-    },
-    {
-      "source": "post_13",
-      "target": "post_1",
       "type": "md"
-    },
-    {
-      "source": "post_14",
-      "target": "post_5",
-      "type": "wiki"
     },
     {
       "source": "post_14",
@@ -489,17 +459,7 @@
     {
       "source": "post_15",
       "target": "post_2",
-      "type": "wiki"
-    },
-    {
-      "source": "post_15",
-      "target": "post_2",
       "type": "md"
-    },
-    {
-      "source": "post_16",
-      "target": "post_8",
-      "type": "wiki"
     },
     {
       "source": "post_16",
@@ -509,17 +469,7 @@
     {
       "source": "post_17",
       "target": "post_1",
-      "type": "wiki"
-    },
-    {
-      "source": "post_17",
-      "target": "post_1",
       "type": "md"
-    },
-    {
-      "source": "post_18",
-      "target": "post_7",
-      "type": "wiki"
     },
     {
       "source": "post_18",
@@ -529,17 +479,7 @@
     {
       "source": "post_19",
       "target": "post_3",
-      "type": "wiki"
-    },
-    {
-      "source": "post_19",
-      "target": "post_3",
       "type": "md"
-    },
-    {
-      "source": "post_2",
-      "target": "post_1",
-      "type": "wiki"
     },
     {
       "source": "post_2",
@@ -549,17 +489,7 @@
     {
       "source": "post_20",
       "target": "post_2",
-      "type": "wiki"
-    },
-    {
-      "source": "post_20",
-      "target": "post_2",
       "type": "md"
-    },
-    {
-      "source": "post_21",
-      "target": "post_14",
-      "type": "wiki"
     },
     {
       "source": "post_21",
@@ -569,17 +499,7 @@
     {
       "source": "post_22",
       "target": "post_6",
-      "type": "wiki"
-    },
-    {
-      "source": "post_22",
-      "target": "post_6",
       "type": "md"
-    },
-    {
-      "source": "post_23",
-      "target": "post_0",
-      "type": "wiki"
     },
     {
       "source": "post_23",
@@ -589,17 +509,7 @@
     {
       "source": "post_24",
       "target": "post_17",
-      "type": "wiki"
-    },
-    {
-      "source": "post_24",
-      "target": "post_17",
       "type": "md"
-    },
-    {
-      "source": "post_25",
-      "target": "post_6",
-      "type": "wiki"
     },
     {
       "source": "post_25",
@@ -609,17 +519,7 @@
     {
       "source": "post_26",
       "target": "post_12",
-      "type": "wiki"
-    },
-    {
-      "source": "post_26",
-      "target": "post_12",
       "type": "md"
-    },
-    {
-      "source": "post_27",
-      "target": "post_1",
-      "type": "wiki"
     },
     {
       "source": "post_27",
@@ -629,17 +529,7 @@
     {
       "source": "post_28",
       "target": "post_19",
-      "type": "wiki"
-    },
-    {
-      "source": "post_28",
-      "target": "post_19",
       "type": "md"
-    },
-    {
-      "source": "post_29",
-      "target": "post_25",
-      "type": "wiki"
     },
     {
       "source": "post_29",
@@ -649,17 +539,7 @@
     {
       "source": "post_3",
       "target": "post_2",
-      "type": "wiki"
-    },
-    {
-      "source": "post_3",
-      "target": "post_2",
       "type": "md"
-    },
-    {
-      "source": "post_4",
-      "target": "post_3",
-      "type": "wiki"
     },
     {
       "source": "post_4",
@@ -669,17 +549,7 @@
     {
       "source": "post_5",
       "target": "post_0",
-      "type": "wiki"
-    },
-    {
-      "source": "post_5",
-      "target": "post_0",
       "type": "md"
-    },
-    {
-      "source": "post_6",
-      "target": "post_0",
-      "type": "wiki"
     },
     {
       "source": "post_6",
@@ -689,27 +559,12 @@
     {
       "source": "post_7",
       "target": "post_4",
-      "type": "wiki"
-    },
-    {
-      "source": "post_7",
-      "target": "post_4",
       "type": "md"
     },
     {
       "source": "post_8",
       "target": "post_6",
-      "type": "wiki"
-    },
-    {
-      "source": "post_8",
-      "target": "post_6",
       "type": "md"
-    },
-    {
-      "source": "post_9",
-      "target": "post_0",
-      "type": "wiki"
     },
     {
       "source": "post_9",
