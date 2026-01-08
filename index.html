@@ -122,10 +122,10 @@
     <div id="3d-graph"></div>
     <div id="helicopter-cat"><div class="cat-body-container"><div id="zzz-bubble">Zzz...</div><div class="propeller"></div><div class="cat-ear left"></div><div class="cat-ear right"></div><div class="cat-body"><div class="cat-face"><div class="eye left"></div><div class="eye right"></div></div></div></div></div>
     
-    <!-- Settings Panel (Minimalist, Controls First) -->
+    <!-- Settings Panel (Minimalist) -->
     <div id="settings-panel" style="position: fixed; bottom: 20px; left: 20px; z-index: 99; padding: 12px; border-radius: 8px; color: #aaa; font-size: 12px; font-family: 'Segoe UI', sans-serif; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(2px); transition: opacity 0.3s;">
         
-        <!-- 1. Controls (First as requested) -->
+        <!-- Controls -->
         <div style="margin-bottom: 15px;">
             <div style="font-weight: bold; color: #fff; margin-bottom: 6px; font-size: 12px; opacity: 0.8;">Controls</div>
             <div style="display: flex; flex-direction: column; gap: 3px;">
@@ -136,8 +136,8 @@
             </div>
         </div>
 
-        <!-- 2. View Settings -->
-        <div>
+        <!-- View Settings -->
+        <div style="margin-bottom: 10px;">
             <div style="font-weight: bold; color: #fff; margin-bottom: 6px; font-size: 12px; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">Filters</div>
             <div style="display: flex; flex-direction: column; gap: 4px;">
                 <div>
@@ -153,6 +153,11 @@
                     <label for="chk-tag-links" style="vertical-align: middle; cursor: pointer; color: #ccc;">Tag Links</label>
                 </div>
             </div>
+        </div>
+
+        <!-- Credits -->
+        <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; opacity: 0.6; font-size: 11px;">
+            Created by fs
         </div>
     </div>
 
@@ -520,6 +525,7 @@
         // 初始化图表
         Graph = ForceGraph3D()(document.getElementById('3d-graph'))
             // .jsonUrl('./posts_data.json')//注释后可以解决loading...的问题
+            .showNavInfo(false) // 禁用默认的底部导航提示
             .backgroundColor('#000000')
             .nodeLabel(null)
             .linkThreeObject(link => {
