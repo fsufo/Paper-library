@@ -27,6 +27,10 @@ jobs:
         with:
           python-version: '3.10' 
 
+      # === 新增步骤: 生成目录标签和索引 ===
+      - name: Generate Directory Labels and Indexes
+        run: python scripts/生成目录和标签索引.py
+
       # === 变更点 2: 运行你的 Python 构建脚本 ===
       # 注意：脚本会自动找到上一级的 posts 目录，不用担心
       - name: Build Blog Data

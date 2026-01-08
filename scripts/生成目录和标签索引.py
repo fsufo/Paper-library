@@ -5,9 +5,13 @@ def generate_markdown_indexes():
     # 1. 基础配置
     root_dir = os.getcwd()
     
+    # 修改：扫描 posts 文件夹
+    posts_dir = os.path.join(root_dir, "posts")
+
     # 定义输出文件夹和文件名
     output_folder_name = "笔记目录[脚本生成]"
-    output_dir = os.path.join(root_dir, output_folder_name)
+    # 修改：输出路径在 posts 中
+    output_dir = os.path.join(posts_dir, output_folder_name)
     
     output_outline_file = os.path.join(output_dir, "All_Notes_Outline.md")
     output_tag_file = os.path.join(output_dir, "Tag_Index.md")
@@ -26,7 +30,8 @@ def generate_markdown_indexes():
     print("正在扫描工程目录...")
 
     # 3. 遍历文件
-    for dirpath, dirnames, filenames in os.walk(root_dir):
+    # 修改：遍历 posts_dir 而不是 root_dir
+    for dirpath, dirnames, filenames in os.walk(posts_dir):
         
         # 优化:如果当前遍历的目录是生成的输出目录,直接跳过
         if output_folder_name in dirpath:
