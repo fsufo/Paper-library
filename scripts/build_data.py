@@ -104,6 +104,7 @@ def build_data():
     nodes = []
     links = []
     id_map = {}
+    tag_to_files = {} # 1. 初始化标签映射
 
     print(f"扫描到 {len(files_full_paths)} 个文件，开始处理路径...")
 
@@ -123,7 +124,9 @@ def build_data():
             id_map[filename] = file_id
             id_map[file_id] = file_id 
             
-            inline_tags = re.findall(r'(?:^|\s)#(\w+)', content)
+            # 2. 升级正则：支持中文、横杠等
+            # 形式支持: #标签 #我的-笔记
+            inline_tags = re.findall(r'(?:^|\s)#([\w\u4e00-\u9fa5\-]+)', content)
             combined_tags = []
             seen = set()
             for t in inline_tags:
@@ -131,6 +134,13 @@ def build_data():
                     combined_tags.append(t)
                     seen.add(t)
             
+            # 3. 收集 Tag -> 多个文件ID 的关系
+            for t in combined_tags:
+                if t not in tag_to_files:
+                    tag_to_files[t] = []
+                # 注意：记录的是 file_id
+                tag_to_files[t].append(file_id)
+
             primary_group = combined_tags[0] if combined_tags else 'default'
 
             nodes.append({
@@ -165,6 +175,26 @@ def build_data():
             target_id = os.path.splitext(target_filename)[0]
             if target_id in id_map and id_map[target_id] != node['id']:
                 links.append({"source": node['id'], "target": id_map[target_id], "type": "md"})
+
+    # 4. 根据 Tag 生成文件之间的"链式连接" (避免生成中心节点)
+    # 效果: A-B-C-D 连在一起
+    for tag_name, fids in tag_to_files.items():
+        count = len(fids)
+        if count < 2:
+            continue
+            
+        # 将该 Tag 下的所有文件连成一条链
+        # 这样它们会聚在一起，但没有中心节点
+        for i in range(count - 1):
+            links.append({
+                "source": fids[i],
+                "target": fids[i+1],
+                "type": "tag_group" # 标记为同组连接
+            })
+            
+        # 可选: 如果希望闭合成环 (A-B-C-A)，解开下面注释
+        # if count > 2:
+        #    links.append({"source": fids[-1], "target": fids[0], "type": "tag_group"})
 
     unique_links = []
     seen = set()

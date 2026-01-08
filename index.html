@@ -149,6 +149,10 @@
             <input type="checkbox" id="chk-md" checked onchange="updateGraphFilter()" style="vertical-align: middle;">
             <label for="chk-md" style="vertical-align: middle; cursor: pointer;">Show MD Links</label>
         </div>
+        <div style="margin-bottom: 6px;">
+            <input type="checkbox" id="chk-tag-links" checked onchange="updateGraphFilter()" style="vertical-align: middle;">
+            <label for="chk-tag-links" style="vertical-align: middle; cursor: pointer;">Show Tag Links</label>
+        </div>
         <div>
             <input type="checkbox" id="chk-gravity" checked onchange="updateGraphFilter()" style="vertical-align: middle;">
             <label for="chk-gravity" style="vertical-align: middle; cursor: pointer;">Tag Force Gravity</label>
@@ -225,7 +229,7 @@
             }
 
             // 动态更新粒子流向
-            Graph.linkDirectionalParticles(link => (highlightLinks.has(link) && !link.isClusterLink) ? 3 : 0);
+            Graph.linkDirectionalParticles(link => (highlightLinks.has(link) && link.type !== 'tag_group') ? 3 : 0);
             Graph.linkDirectionalParticleWidth(link => highlightLinks.has(link) ? 1.5 : 0);
             Graph.linkDirectionalParticleColor(link => link.sourceNode ? link.sourceNode.color : '#ffffff'); 
             Graph.linkDirectionalParticleSpeed(link => 0.005);
@@ -237,6 +241,7 @@
             // 1. 获取所有开关状态
             const showWiki = document.getElementById('chk-wiki').checked;
             const showMd = document.getElementById('chk-md').checked;
+            const showTagLinks = document.getElementById('chk-tag-links') ? document.getElementById('chk-tag-links').checked : true;
             const enableGravity = document.getElementById('chk-gravity').checked;
             // 兼容检查索引开关
             const chkIndex = document.getElementById('chk-index-nodes');
@@ -271,9 +276,9 @@
                 if (!filteredNodeIds.has(sId) || !filteredNodeIds.has(tId)) return false;
 
                 // 根据类型筛选
-                if (l.isClusterLink) return enableGravity;
                 if (l.type === 'wiki') return showWiki;
                 if (l.type === 'md') return showMd;
+                if (l.type === 'tag_group') return showTagLinks;
                 return true; 
             });
 
@@ -360,7 +365,7 @@
             
             // 7. 刷新连线颜色
             setTimeout(() => {
-                const currentLinks = Graph.graphData().links.filter(l => !l.isClusterLink);
+                const currentLinks = Graph.graphData().links.filter(l => l.type !== 'tag_group');
                 currentLinks.forEach(link => {
                     if(link.__lineObj && link.sourceNode && link.targetNode) {
                         const c1 = new THREE.Color(link.sourceNode.color), c2 = new THREE.Color(link.targetNode.color);
@@ -527,9 +532,22 @@
             .linkThreeObject(link => {
                 const geo = new THREE.BufferGeometry();
                 geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
-                geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array([0.5,0.5,0.5, 0.5,0.5,0.5]), 3));
+                
+                // 默认颜色 (灰色)
+                let colorArr = [0.5,0.5,0.5, 0.5,0.5,0.5];
+                let opacity = 0.15;
+
+                // 特殊链接样式
+                if (link.type === 'tag_group') {
+                    // Tag链式连接：使用淡蓝色，且透明度更低，模拟星座连线
+                    colorArr = [0.2, 0.4, 0.6, 0.2, 0.4, 0.6]; 
+                    opacity = 0.1; 
+                }
+
+                geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colorArr), 3));
                 // 反向链接完全透明，不干扰视觉，只提供粒子路径
-                const opacity = link.isReverse ? 0 : 0.15;
+                if (link.isReverse) opacity = 0;
+                
                 const mat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: opacity });
                 const line = new THREE.Line(geo, mat); 
                 line.frustumCulled = false; // 关键修复：防止近距离观察时连线因视锥体误判而消失
@@ -658,53 +676,24 @@
         // 数据处理
         fetch('./posts_data.json').then(r => r.json()).then(data => {
             const map = {};
-            const tagGroups = {};
             allTags.clear();
 
-            // 1. 建立索引 & 分组 Tag (支持多标签聚类)
+            // 1. 建立索引 & 收集所有 Tag (用于搜索)
             data.nodes.forEach(n => { 
                 n.neighbors = []; 
                 map[n.id] = n; 
                 
-                // Multi-Tag Clustering Logic
-                // 如果有 all_tags，则归入多个组；否则归入 group 主组
+                // 仅收集 Tag 供搜索使用，不再进行前端聚类计算
                 const tagsToProcess = (n.all_tags && n.all_tags.length > 0) ? n.all_tags : [n.group || 'default'];
-                
-                tagsToProcess.forEach(tag => {
-                    allTags.add(tag); // Collect to global set
-                    if(!tagGroups[tag]) tagGroups[tag] = [];
-                    tagGroups[tag].push(n);
-                });
+                tagsToProcess.forEach(tag => allTags.add(tag));
             });
 
-            // 2. 为相同 Tag 的节点创建隐形引力链接 (多标签版)
-            // 一个节点如果属于多个 Tag 组，它会被这些组的 Hub 共同拉扯（变成交集）
-            Object.keys(tagGroups).forEach(tag => {
-                const groupNodes = tagGroups[tag];
-                if(groupNodes.length > 1) {
-                    // 简单的策略：取该组第一个作为 Hub
-                    // (更好的策略可能是虚拟中心，但 ForceGraph 不太好做虚拟节点)
-                    const hub = groupNodes[0];
-                    
-                    for(let i=1; i<groupNodes.length; i++) {
-                        const targetNode = groupNodes[i];
-                        // 避免自己连自己
-                        if (targetNode.id !== hub.id) {
-                            data.links.push({ 
-                                source: targetNode.id, 
-                                target: hub.id, 
-                                isClusterLink: true 
-                            });
-                        }
-                    }
-                }
-            });
-
-            // 3. 处理实体链接 & 预处理 (含双向Wiki处理)
+            // 2. 处理实体链接 & 预处理 (含双向Wiki处理)
+            // 此时 data.links 已经包含后端生成的 type: 'tag_group' 链接
             const extraLinks = [];
             data.links.forEach(l => {
-                // Ensure type exists (default to 'wiki' if undefined for compatibility)
-                if(!l.isClusterLink && !l.type) l.type = 'wiki';
+                // 默认类型归为 wiki (如果后端未指定)
+                if(!l.type) l.type = 'wiki';
 
                 // Wiki Link: 添加反向的视觉 Link 以实现双向粒子
                 if(l.type === 'wiki') {
@@ -722,8 +711,10 @@
                 // Pre-resolve objects for ForceGraph
                 const a = map[l.source], b = map[l.target];
                 if(a && b) { 
-                    // 仅正向/非cluster链接参与邻居统计 (反向链接仅作为视觉辅助)
-                    if(!l.isClusterLink && !l.isReverse) { a.neighbors.push(b); b.neighbors.push(a); }
+                    // 仅正向实体链接参与邻居统计 (反向链接仅作为视觉辅助)
+                    // 注意：tag_group 链接虽然是实体的，但也参与邻居计算，影响星星大小(degree)
+                    // 如果不想让 Tag 连接影响星星大小，可以在这里加条件 && l.type !== 'tag_group'
+                    if(!l.isReverse) { a.neighbors.push(b); b.neighbors.push(a); }
                     l.sourceNode = a; l.targetNode = b; 
                 }
             });
@@ -737,7 +728,10 @@
             // Initialize Layout via Filter function
             // 4. 定制聚类力
             Graph.d3Force('charge').strength(-120); 
-            Graph.d3Force('link').distance(link => link.isClusterLink ? 40 : 100).strength(link => link.isClusterLink ? 0.05 : 1);
+            // 针对 Tag 组连接 (链式) 设置较弱的拉力，避免图谱过于僵硬
+            Graph.d3Force('link')
+                .distance(link => link.type === 'tag_group' ? 40 : 100)
+                .strength(link => link.type === 'tag_group' ? 0.05 : 1);
             
             // 5. 自定义鼠标缩放 (Zoom to Cursor) & 交互限制
             Graph.enableNodeDrag(true); // 恢复左键拖动星星
