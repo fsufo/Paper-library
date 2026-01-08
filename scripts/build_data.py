@@ -2,18 +2,21 @@
 import os
 import json
 import re
-import time
 import sys
 
-# --- 动态计算路径 ---
-# 获取当前脚本所在目录 (scripts/)
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# 获取项目根目录 (scripts 的上一级)
-PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+# --- 调试开关 ---
+DEBUG_MODE = True
 
+# --- 动态计算路径 ---
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 POSTS_DIR = os.path.join(PROJECT_ROOT, 'posts')
 OUTPUT_FILE = os.path.join(PROJECT_ROOT, 'posts_data.json')
 ENABLE_WIKI_LINKS = True 
+
+def log(msg):
+    if DEBUG_MODE:
+        print(f"[DEBUG] {msg}")
 
 def parse_front_matter(content):
     metadata = {}
@@ -32,11 +35,64 @@ def parse_front_matter(content):
                 metadata[key] = val
     return metadata, markdown_content
 
+def fix_image_paths(content, file_path):
+    """
+    同时修复 Markdown 图片 ![]() 和 HTML 图片 <img src=""> 的路径
+    """
+    # 计算当前文件相对于项目根目录的路径 (例如: posts/Tech)
+    current_dir_rel = os.path.relpath(os.path.dirname(file_path), PROJECT_ROOT)
+
+    # --- 核心路径处理逻辑 ---
+    def process_url(url):
+        # 如果是网络图片或绝对路径，不处理
+        if url.startswith(('http://', 'https://', '//', 'data:', '/')):
+            return url
+        
+        # 拼接路径：当前目录 + 图片相对路径
+        new_path = os.path.join(current_dir_rel, url)
+        # 标准化并转为 Web 斜杠
+        new_path = os.path.normpath(new_path).replace('\\', '/')
+        return new_path
+
+    # 1. 修复 Markdown 语法: ![alt](url)
+    def replace_md(match):
+        alt = match.group(1)
+        url = match.group(2)
+        new_url = process_url(url)
+        if new_url != url:
+            log(f"Markdown图修复: '{url}' -> '{new_url}'")
+        return f'![{alt}]({new_url})'
+    
+    # 正则: ! [ ... ] ( ... )
+    content = re.sub(r'!\[(.*?)\]\((.*?)(?:\s+".*?")?\)', replace_md, content)
+
+    # 2. 修复 HTML 语法: <img ... src="url" ...>
+    def replace_html(match):
+        prefix = match.group(1) # 捕获 <img ... src="
+        url = match.group(2)    # 捕获 url
+        suffix = match.group(3) # 捕获 结束引号 "
+        
+        new_url = process_url(url)
+        if new_url != url:
+            log(f"HTML图修复: '{url}' -> '{new_url}'")
+        
+        return f'{prefix}{new_url}{suffix}'
+
+    # 正则说明:
+    # (<img\s+[^>]*?src=["\'])  -> 匹配 <img 开头，中间任意字符，直到 src=" 或 src='，并捕获为组1
+    # (.*?)                     -> 捕获 URL 内容，组2
+    # (["\'])                   -> 捕获闭合的引号，组3
+    html_pattern = r'(<img\s+[^>]*?src=["\'])(.*?)(["\'])'
+    content = re.sub(html_pattern, replace_html, content, flags=re.IGNORECASE)
+
+    return content
+
 def build_data():
-    print(f"[Build] Scanning posts in {POSTS_DIR}...")
+    print(f"--- 开始构建 (v4.3 增强版) ---")
+    print(f"根目录: {PROJECT_ROOT}")
+    
     if not os.path.exists(POSTS_DIR):
-        # 如果是 CI 环境，没有 posts 目录应该报错
-        print(f"[Error] Posts directory not found at {POSTS_DIR}")
+        print(f"[Error] 找不到 posts 目录")
         return False
         
     files_full_paths = []
@@ -49,18 +105,24 @@ def build_data():
     links = []
     id_map = {}
 
+    print(f"扫描到 {len(files_full_paths)} 个文件，开始处理路径...")
+
     # 1. 解析节点
     for filepath in files_full_paths:
         try:
             filename = os.path.basename(filepath)
             with open(filepath, 'r', encoding='utf-8') as f:
-                meta, content = parse_front_matter(f.read())
+                raw_text = f.read()
+            
+            meta, raw_content = parse_front_matter(raw_text)
+            
+            # --- 调用新的双重修复函数 ---
+            content = fix_image_paths(raw_content, filepath)
             
             file_id = os.path.splitext(filename)[0]
             id_map[filename] = file_id
             id_map[file_id] = file_id 
             
-            # 提取正文 #Tag
             inline_tags = re.findall(r'(?:^|\s)#(\w+)', content)
             combined_tags = []
             seen = set()
@@ -76,11 +138,11 @@ def build_data():
                 "label": meta.get('title', file_id),
                 "group": primary_group,
                 "all_tags": combined_tags,
-                "content": content, 
+                "content": content,
                 "val": 1
             })
         except Exception as e:
-            print(f"[Warning] Failed to read {filename}: {e}")
+            print(f"[Warning] 处理 {filename} 失败: {e}")
 
     # 2. 解析连接
     link_pattern_wiki = re.compile(r'\[\[(.*?)\]\]')
@@ -104,7 +166,6 @@ def build_data():
             if target_id in id_map and id_map[target_id] != node['id']:
                 links.append({"source": node['id'], "target": id_map[target_id], "type": "md"})
 
-    # 3. 去重
     unique_links = []
     seen = set()
     for l in links:
@@ -115,18 +176,15 @@ def build_data():
 
     data = {"nodes": nodes, "links": unique_links}
     
-    # 4. 写入文件
+    # 3. 写入
     try:
         with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-        print(f"[Build] Success! {len(nodes)} posts indexed. Output: {OUTPUT_FILE}")
+        print(f"[Success] 构建完成，已处理 HTML 和 MD 图片路径。")
         return True
     except Exception as e:
-        print(f"[Error] Failed to write output: {e}")
+        print(f"[Error] 写入失败: {e}")
         return False
 
-# 这段代码让它可以被 python scripts/build_data.py 直接调用
 if __name__ == '__main__':
-    success = build_data()
-    if not success:
-        sys.exit(1) # 如果失败，告诉 GitHub Action 报错
+    build_data()

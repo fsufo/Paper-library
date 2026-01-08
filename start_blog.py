@@ -7,6 +7,9 @@ import subprocess
 import webbrowser
 import time
 
+# --- 禁止生成 .pyc 缓存文件 ---
+sys.dont_write_bytecode = True  # <--- 加上这一行
+
 # --- 导入构建脚本 ---
 # 将 scripts 目录加入搜索路径，以便能 import build_data
 sys.path.append(os.path.join(os.path.dirname(__file__), 'scripts'))

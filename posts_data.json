@@ -332,7 +332,7 @@
       "label": "文档总索引",
       "group": "default",
       "all_tags": [],
-      "content": "# 这边是笔记本文档总索引\n\n---\n\n## 全笔记索引\n\n### 笔记本tag\n\n- [笔记本tag](笔记目录[脚本生成]/Tag_Index.md)\n\n### 笔记本目录\n\n- [笔记本目录](笔记目录[脚本生成]/All_Notes_Outline.md)\n\n---\n\n## 游戏开发文档\n\n### 游戏渲染的文档链接\n\n- [渲染文档链接汇总](游戏开发/渲染文档汇总.md)\n\n---\n\n## 📝本地TODO看板\n\n- **📝**[[本地网页]日程看板需要浏览器打开](TODO日程看板/TODO日程看板网页.html)\n\n<img src=\"笔记图床/文档总索引/1767321953049.png\" alt=\"\" height=\"201\" data-align=\"left\"/>\n\n---\n\n## 网页链接\n\n- [[网页]Markdown语法](https://www.runoob.com/markdown/md-tutorial.html)\n\n---\n\n## 本地Tools\n\n### Node\n- [Git Boundle 备份工具js 依赖于Node](Tools/启动git备份工具bundle.bat)\n\n### Python\n- [备份并压缩整个笔记本.py](Tools/备份并压缩整个笔记本.py)\n- [镜像图床重构.py](Tools/镜像图床重构.py)\n- [生成目录和标签索引.py](Tools/生成目录和标签索引.py)\n- [打开可以连接github的浏览器(需要先关闭浏览器)](<Tools/Github Hosts python/打开可以连接github的浏览器(需要先关闭浏览器).py>)\n---\n",
+      "content": "# 这边是笔记本文档总索引\n\n---\n\n## 全笔记索引\n\n### 笔记本tag\n\n- [笔记本tag](笔记目录[脚本生成]/Tag_Index.md)\n\n### 笔记本目录\n\n- [笔记本目录](笔记目录[脚本生成]/All_Notes_Outline.md)\n\n---\n\n## 游戏开发文档\n\n### 游戏渲染的文档链接\n\n- [渲染文档链接汇总](游戏开发/渲染文档汇总.md)\n\n---\n\n## 📝本地TODO看板\n\n- **📝**[[本地网页]日程看板需要浏览器打开](TODO日程看板/TODO日程看板网页.html)\n\n<img src=\"posts/笔记图床/文档总索引/1767321953049.png\" alt=\"\" height=\"201\" data-align=\"left\"/>\n\n---\n\n## 网页链接\n\n- [[网页]Markdown语法](https://www.runoob.com/markdown/md-tutorial.html)\n\n---\n\n## 本地Tools\n\n### Node\n- [Git Boundle 备份工具js 依赖于Node](Tools/启动git备份工具bundle.bat)\n\n### Python\n- [备份并压缩整个笔记本.py](Tools/备份并压缩整个笔记本.py)\n- [镜像图床重构.py](Tools/镜像图床重构.py)\n- [生成目录和标签索引.py](Tools/生成目录和标签索引.py)\n- [打开可以连接github的浏览器(需要先关闭浏览器)](<Tools/Github Hosts python/打开可以连接github的浏览器(需要先关闭浏览器).py>)\n---\n",
       "val": 1
     },
     {
