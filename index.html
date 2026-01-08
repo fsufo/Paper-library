@@ -234,94 +234,135 @@
         function updateGraphFilter() {
             if(!gData || !Graph) return;
             
-            // 获取控件状态
+            // 1. 获取所有开关状态
             const showWiki = document.getElementById('chk-wiki').checked;
             const showMd = document.getElementById('chk-md').checked;
             const enableGravity = document.getElementById('chk-gravity').checked;
-            const showIndexNodes = document.getElementById('chk-index-nodes').checked; // 获取索引开关
-
-            // 定义索引类 Tag
+            // 兼容检查索引开关
+            const chkIndex = document.getElementById('chk-index-nodes');
+            const showIndexNodes = chkIndex ? chkIndex.checked : true;
             const indexKeywords = ['index', '目录', '索引'];
 
-            // 0. Filter Nodes
+            // 2. 筛选节点 (Nodes)
             let filteredNodes = gData.nodes.filter(n => {
                 const nodeTags = (n.all_tags && n.all_tags.length > 0) ? n.all_tags : [n.group || 'default'];
                 
-                // 1. 索引节点过滤逻辑：如果不显示索引，且该节点包含索引类tag，则过滤掉
+                // 过滤索引节点
                 if (!showIndexNodes) {
-                    const isIndexNode = nodeTags.some(tag => indexKeywords.includes(tag.toLowerCase()));
-                    if (isIndexNode) return false;
+                    if (nodeTags.some(tag => indexKeywords.includes(tag.toLowerCase()))) return false;
                 }
 
-                // 2. 标签筛选逻辑 (交集)
+                // 过滤标签 (Tags)
                 if (selectedTags.size > 0) {
                     for (let t of selectedTags) {
                          if (!nodeTags.includes(t)) return false;
                     }
                 }
-                
                 return true;
             });
-
             const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
             
-            // 1. Filter valid links
+            // 3. 筛选链接 (Links)
             let filteredLinks = gData.links.filter(l => {
-                // Ensure both ends exist in filtered nodes
                 const sId = (typeof l.source === 'object') ? l.source.id : l.source;
                 const tId = (typeof l.target === 'object') ? l.target.id : l.target;
+                
+                // 两端节点必须都在
                 if (!filteredNodeIds.has(sId) || !filteredNodeIds.has(tId)) return false;
 
-                // Keep cluster links only if gravity is enabled
+                // 根据类型筛选
                 if (l.isClusterLink) return enableGravity;
-                
-                // Keep normal links based on type
                 if (l.type === 'wiki') return showWiki;
                 if (l.type === 'md') return showMd;
-                return true; // Default keep others
+                return true; 
             });
 
-            // 2. Clone structure 
+            // --- 核心：纯动态色温计算 ---
+
+            // A. 重新统计当前可见连接数
+            // Map<NodeID, Count>
+            const currentDegrees = new Map();
+            filteredNodes.forEach(n => currentDegrees.set(n.id, 0));
+            
+            const getID = (n) => (typeof n === 'object') ? n.id : n;
+
+            filteredLinks.forEach(link => {
+
+                const sId = getID(link.source);
+                const tId = getID(link.target);
+                
+                if (currentDegrees.has(sId)) currentDegrees.set(sId, currentDegrees.get(sId) + 1);
+                if (currentDegrees.has(tId)) currentDegrees.set(tId, currentDegrees.get(tId) + 1);
+            });
+
+            // B. 找出当前的“最高热度” (Dynamic Max Degree)
+            let newMaxDegree = 0;
+            for (let d of currentDegrees.values()) {
+                if (d > newMaxDegree) newMaxDegree = d;
+            }
+            // 【修复】设置一个最低阈值 (比如 10 或 20)，防止当连接数极少时，单个节点的大小比例失控爆炸
+            maxDegree = Math.max(newMaxDegree, 20);
+
+            // C. 重新上色 (根据 degree / maxDegree 的比例)
+            filteredNodes.forEach(node => {
+                const degree = currentDegrees.get(node.id) || 0;
+                // 这里的 getStarColor 会使用上面更新过的 maxDegree 全局变量
+                const newColor = getStarColor(degree);
+                
+                node.color = newColor; 
+                
+                // 刷新 3D 材质
+                if (node.__threeObj) {
+                    const group = node.__threeObj;
+                    
+                    // 核心
+                    if (group.core) {
+                        const newSprite = createCoreSprite(newColor);
+                        if(group.core.material.map) group.core.material.map.dispose();
+                        group.core.material.map = newSprite.material.map;
+                    }
+                    // 光芒
+                    if (group.cross) {
+                        const newCross = createCrossSprite(newColor, degree);
+                        if(group.cross.material.map) group.cross.material.map.dispose();
+                        group.cross.material.map = newCross.material.map;
+                    }
+                    
+                    // 刷新呼吸大小基准 (让大节点呼吸幅度更大)
+                    const coreSize = 12;
+                    const crossSize = 12 * (1 + (degree / maxDegree) * 0.5);
+                    
+                    group.userData.baseScaleCore = coreSize;
+                    group.userData.baseScaleCross = crossSize;
+                }
+            });
+
+            // 4. 更新图表数据
             Graph.graphData({
                 nodes: filteredNodes,
                 links: filteredLinks
             });
 
-            // 3. Adjust Physics
+            // 5. 调整物理引擎
             const chargeStrength = enableGravity ? -120 : -60;
             Graph.d3Force('charge').strength(chargeStrength);
 
-            // 4. 重建活跃 neighbors 索引 (使用全局字典，不再依赖 Node 对象属性)
-            activeLookup = {}; // 清空
-            
-            // 辅助函数：安全获取 ID
-            const getID = (n) => (typeof n === 'object') ? n.id : n;
-
+            // 6. 重建高亮索引
+            activeLookup = {}; 
             filteredLinks.forEach(link => {
-                // 所有经过筛选的连接（包括 Tag Cluster 链接）都应参与高亮计算
-                // if(link.isClusterLink) return; 
-
                 const sId = getID(link.source);
                 const tId = getID(link.target);
-
-                // 初始化
                 if(!activeLookup[sId]) activeLookup[sId] = { neighbors: [], links: [] };
                 if(!activeLookup[tId]) activeLookup[tId] = { neighbors: [], links: [] };
-
-                // 记录关系 (只存 ID，渲染时再找对象，避免引用错乱)
-                activeLookup[sId].neighbors.push(tId);
-                activeLookup[sId].links.push(link);
-
-                activeLookup[tId].neighbors.push(sId);
-                activeLookup[tId].links.push(link);
+                activeLookup[sId].neighbors.push(tId); activeLookup[sId].links.push(link);
+                activeLookup[tId].neighbors.push(sId); activeLookup[tId].links.push(link);
             });
             
-            // Re-apply link coloring
+            // 7. 刷新连线颜色
             setTimeout(() => {
                 const currentLinks = Graph.graphData().links.filter(l => !l.isClusterLink);
                 currentLinks.forEach(link => {
                     if(link.__lineObj && link.sourceNode && link.targetNode) {
-                        // Re-trigger color update
                         const c1 = new THREE.Color(link.sourceNode.color), c2 = new THREE.Color(link.targetNode.color);
                         const attr = link.__lineObj.geometry.attributes.color;
                         attr.setXYZ(0, c1.r, c1.g, c1.b); attr.setXYZ(1, c1.r, c1.g, c1.b);
@@ -331,6 +372,7 @@
                 });
             }, 100);
         }
+
         // MD 链接劫持系统
         document.getElementById('markdown-container').addEventListener('click', function(e) {
             if(e.target.tagName === 'A') {
@@ -479,7 +521,7 @@
 
         // 初始化图表
         Graph = ForceGraph3D()(document.getElementById('3d-graph'))
-            .jsonUrl('./posts_data.json')
+            // .jsonUrl('./posts_data.json')//注释后可以解决loading...的问题
             .backgroundColor('#000000')
             .nodeLabel(null)
             .linkThreeObject(link => {
@@ -903,7 +945,7 @@
             
             links.forEach(link => {
                 const line = link.__lineObj; if(!line) return;
-                let t = 0.15;
+                let t = 0.3;
                 if(isHovering) t = highlightLinks.has(link) ? 0.8 : 0.02;
                 line.material.opacity += (t - line.material.opacity) * 0.1;
             });
@@ -1157,7 +1199,7 @@
                 size: 6, // 增大尺寸以减少像素级闪烁
                 vertexColors: true,
                 transparent: true,
-                opacity: 0.3, // 降低透明度，使其更像背景噪音
+                opacity: 0.5, // 降低透明度，使其更像背景噪音
                 sizeAttenuation: true,
                 depthWrite: false,
                 blending: THREE.AdditiveBlending
