@@ -734,6 +734,10 @@
             const controls = Graph.controls();
             controls.enablePan = false;  // 禁用右键平移，防止迷失
             controls.enableZoom = false; // 禁用原生缩放，接管滚轮
+            
+            // 限制相机活动范围 (参考 Far=8000)
+            controls.minDistance = 50;   // 最近能看多近
+            controls.maxDistance = 7000; // 最远能拉多远 (限制在球体内)
 
             // 记录初始最佳视角
             setTimeout(() => {
@@ -866,9 +870,13 @@
                     const nextPos = currentPivot.clone().add(camVec);
                     const nextTarget = currentPivot.clone().add(tgtVec);
                     
-                    cam.position.copy(nextPos);
-                    target.copy(nextTarget);
-                    Graph.controls().update();
+                    // 增加边界限制：仅当新位置在允许半径内时才应用
+                    // 参考 controls.maxDistance (7000)
+                    if (nextPos.length() < 7000 && nextPos.length() > 50) {
+                        cam.position.copy(nextPos);
+                        target.copy(nextTarget);
+                        Graph.controls().update();
+                    }
                 }
 
                 // 3. 阻尼衰减
@@ -1171,7 +1179,7 @@
             if(Graph.camera()) {
                 // 设置合理的远裁切面 (Skybox R=4000, Stars R=4000, Far=8000 足够安全)
                 // 之前 Far=30000 且 Skybox=30000 容易导致 Z-fighting 或被切除闪烁
-                Graph.camera().far = 8000;
+                Graph.camera().far = 16000;
                 Graph.camera().updateProjectionMatrix();
             }
 
