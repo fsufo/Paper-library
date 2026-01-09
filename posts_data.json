@@ -679,6 +679,11 @@
       "type": "md"
     },
     {
+      "source": "渲染文档汇总",
+      "target": "文档总索引",
+      "type": "md"
+    },
+    {
       "source": "All_Notes_Outline",
       "target": "post_27",
       "type": "md"

@@ -203,10 +203,18 @@ def build_data():
     
     for node in nodes:
         for match in link_pattern_md.findall(node['content']):
-            if match.startswith('http') or match.startswith('//'):
+            # 1. 解码 URL (解决中文路径 %E6%96... 无法匹配的问题)
+            match = urllib.parse.unquote(match)
+            # 2. 去除锚点和参数 (#section, ?query)
+            match = match.split('#')[0].split('?')[0]
+            
+            if match.startswith('http') or match.startswith('//') or match.startswith('mailto:'):
                 continue
-            target_filename = match.split('/')[-1]
+                
+            # 3. 统一路径分隔符并提取文件名
+            target_filename = match.replace('\\', '/').split('/')[-1]
             target_id = os.path.splitext(target_filename)[0]
+            
             if target_id in id_map and id_map[target_id] != node['id']:
                 links.append({"source": node['id'], "target": id_map[target_id], "type": "md"})
 
